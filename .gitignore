@@ -1,0 +1,5 @@
+# Raw and reference datasets are downloaded separately from the source documented in README.md.
+/dataset/
+
+# Project brief and other PDF documents.
+*.pdf

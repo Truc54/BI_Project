@@ -58,10 +58,10 @@ For every metric, document its formula, unit, denominator, aggregation behavior,
 
 ## Deliverables
 
-- [`requirements_traceability.md`](requirements_traceability.md): C1–C8 and E1–E5 mapped to required grain, measures, dimensional roles, hierarchies, and analysis period.
-- [`metric_glossary.md`](metric_glossary.md): formulas, units, denominators, aggregation, and source caveats.
-- [`analysis_grain_matrix.md`](analysis_grain_matrix.md): desired output grain and roll-up/drill-down path per question.
-- [`metric_decisions.md`](metric_decisions.md): revenue, tip ratio, passenger grouping, distance bands, borough attribution, comparison periods, and unresolved vendor terminology.
+- [`requirements_traceability.md`](../../deliverables/phase1/phuc/requirements_traceability.md): C1–C8 and E1–E5 mapped to required grain, measures, dimensional roles, hierarchies, and analysis period.
+- [`metric_glossary.md`](../../deliverables/phase1/phuc/metric_glossary.md): formulas, units, denominators, aggregation, and source caveats.
+- [`analysis_grain_matrix.md`](../../deliverables/phase1/phuc/analysis_grain_matrix.md): desired output grain and roll-up/drill-down path per question.
+- [`metric_decisions.md`](../../deliverables/phase1/phuc/metric_decisions.md): revenue, tip ratio, passenger grouping, distance bands, borough attribution, comparison periods, and unresolved vendor terminology.
 
 ## Acceptance checklist
 

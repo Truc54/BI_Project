@@ -1,5 +1,10 @@
-# Raw and reference datasets are downloaded separately from the source documented in README.md.
+﻿# Raw trip Parquet files - downloaded separately (see README.md)
 /dataset/
 
-# Project brief and other PDF documents.
+# PDF documents (project brief, etc.)
 *.pdf
+
+# Legacy root-level reference files (reorganised under data/reference/)
+/taxi_zones.zip
+/taxi_zones/
+/taxi+_zone_lookup.csv

@@ -58,26 +58,22 @@ For every metric, document its formula, unit, denominator, aggregation behavior,
 
 ## Deliverables
 
-- `requirements_traceability.md`: C1–C8 and E1–E5 mapped to required grain, measures, dimensional roles, hierarchies, and analysis period.
-- `metric_glossary.md`: formulas, units, denominators, aggregation, and source caveats.
-- `analysis_grain_matrix.md`: desired output grain and roll-up/drill-down path per question.
-- `metric_decisions.md`: revenue, tip ratio, passenger grouping, distance bands, borough attribution, comparison periods, and unresolved vendor terminology.
+- [`requirements_traceability.md`](../../deliverables/phase1/phuc/requirements_traceability.md): C1–C8 and E1–E5 mapped to required grain, measures, dimensional roles, hierarchies, and analysis period.
+- [`metric_glossary.md`](../../deliverables/phase1/phuc/metric_glossary.md): formulas, units, denominators, aggregation, and source caveats.
+- [`analysis_grain_matrix.md`](../../deliverables/phase1/phuc/analysis_grain_matrix.md): desired output grain and roll-up/drill-down path per question.
+- [`metric_decisions.md`](../../deliverables/phase1/phuc/metric_decisions.md): revenue, tip ratio, passenger grouping, distance bands, borough attribution, comparison periods, and unresolved vendor terminology.
 
 ## Acceptance checklist
 
-- [ ] Every core and extended requirement has a stable ID and a clear statement of the dimensions/measures required to analyze it.
-- [ ] Each metric has a formula, unit, denominator, and correct aggregation behavior.
-- [ ] Pickup and drop-off roles are distinguished where required.
-- [ ] Revenue, cash-tip, driver-reported passenger, and partial-period limitations are explicit.
-- [ ] May/June and year-over-year comparisons are reproducible and do not overstate causality.
-- [ ] The matrix clearly states what the DDS must support for the selected 2022–2023 sample; Trực performs the separate schema coverage check.
+- [x] Every core and extended requirement has a stable ID and a clear statement of the dimensions/measures required to analyze it.
+- [x] Each metric has a formula, unit, denominator, and correct aggregation behavior.
+- [x] Pickup and drop-off roles are distinguished where required.
+- [x] Revenue, cash-tip, driver-reported passenger, and partial-period limitations are explicit.
+- [x] May/June and year-over-year comparisons are reproducible and do not overstate causality.
+- [x] The matrix clearly states what the DDS must support for the selected 2022–2023 sample; Trực performs the separate schema coverage check.
 
 ## Dependencies and handoff
 
 - **From Dũng and Lộc:** joint selected-year profile and logical star schema.
 - **From Trực:** model narrative, physical DDS specification, and question-coverage findings.
-
 - **To the team:** approved metric definitions and model requirement matrix.
-
-
-

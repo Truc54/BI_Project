@@ -1,0 +1,17 @@
+---
+title: NYC Yellow Taxi DDS - Conceptual Model (Phase 1, bản nháp chờ Dũng duyệt)
+---
+%% Mức khái niệm: chỉ có thực thể nghiệp vụ và quan hệ, chưa có thuộc tính hay khóa.
+%% Sự kiện trung tâm = một bản ghi cuốc xe do thiết bị TPEP ghi nhận (grain: bản ghi nguồn).
+erDiagram
+    "Ngày lịch" ||--o{ "Bản ghi cuốc xe" : "ngày đón"
+    "Ngày lịch" ||--o{ "Bản ghi cuốc xe" : "ngày trả"
+    "Thời điểm trong ngày" ||--o{ "Bản ghi cuốc xe" : "giờ đón"
+    "Thời điểm trong ngày" ||--o{ "Bản ghi cuốc xe" : "giờ trả"
+    "Vùng taxi" ||--o{ "Bản ghi cuốc xe" : "vùng đón"
+    "Vùng taxi" ||--o{ "Bản ghi cuốc xe" : "vùng trả"
+    "Nhà cung cấp TPEP" ||--o{ "Bản ghi cuốc xe" : "ghi nhận"
+    "Biểu giá" ||--o{ "Bản ghi cuốc xe" : "áp dụng"
+    "Phương thức thanh toán" ||--o{ "Bản ghi cuốc xe" : "thanh toán bằng"
+    "Nhóm hành khách" ||--o{ "Bản ghi cuốc xe" : "phân nhóm"
+    "Dải cự ly" ||--o{ "Bản ghi cuốc xe" : "phân dải"

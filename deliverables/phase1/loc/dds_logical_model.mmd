@@ -1,0 +1,134 @@
+---
+title: NYC Yellow Taxi DDS - Logical Star Schema (Phase 1, 2022-2023)
+---
+erDiagram
+    DimDate ||--o{ FactYellowTaxiTrip : "Pickup Date"
+    DimDate ||--o{ FactYellowTaxiTrip : "Drop-off Date"
+    DimTime ||--o{ FactYellowTaxiTrip : "Pickup Time"
+    DimTime ||--o{ FactYellowTaxiTrip : "Drop-off Time"
+    DimTaxiZone ||--o{ FactYellowTaxiTrip : "Pickup Zone"
+    DimTaxiZone ||--o{ FactYellowTaxiTrip : "Drop-off Zone"
+    DimVendor ||--o{ FactYellowTaxiTrip : "Vendor"
+    DimRateCode ||--o{ FactYellowTaxiTrip : "Rate Code"
+    DimPaymentType ||--o{ FactYellowTaxiTrip : "Payment Type"
+    DimPassengerGroup ||--o{ FactYellowTaxiTrip : "Passenger Group"
+    DimDistanceBand ||--o{ FactYellowTaxiTrip : "Distance Band"
+
+    FactYellowTaxiTrip {
+        bigint TripRecordKey PK "Surrogate; grain = 1 bản ghi nguồn"
+        string SourceFileMonth "DD: tệp nguồn YYYY-MM"
+        int SourceRowNumber "DD: dòng trong tệp, đề xuất OD-13"
+        int PickupDateKey FK "DimDate"
+        int PickupTimeKey FK "DimTime"
+        int DropoffDateKey FK "DimDate"
+        int DropoffTimeKey FK "DimTime"
+        int PickupTaxiZoneKey FK "DimTaxiZone"
+        int DropoffTaxiZoneKey FK "DimTaxiZone"
+        int VendorKey FK
+        int RateCodeKey FK
+        int PaymentTypeKey FK
+        int PassengerGroupKey FK
+        int DistanceBandKey FK
+        timestamp PickupDateTime "DD: giờ địa phương NYC"
+        timestamp DropoffDateTime "DD"
+        string StoreAndForwardFlag "DD: Y / N / NULL"
+        int TripRecordCount "Measure = 1"
+        int PassengerCount "Measure, NULL giữ NULL"
+        decimal TripDistanceMiles "Measure, dặm"
+        decimal FareAmount "USD"
+        decimal ExtraAmount "USD, không cộng với cấu phần khác"
+        decimal MtaTaxAmount "USD"
+        decimal TipAmount "USD, chỉ tip thẻ"
+        decimal TollsAmount "USD"
+        decimal ImprovementSurchargeAmount "USD"
+        decimal CongestionSurchargeAmount "USD, NULL = không ghi nhận"
+        decimal AirportFeeAmount "USD, NULL = không ghi nhận"
+        decimal TotalAmount "USD, chuẩn cho Total Revenue"
+        int TripDurationSeconds "Dẫn xuất, giữ cả âm"
+        decimal ExtraResidualAmount "Phần dư, đề xuất OD-02"
+        bool IsValidDuration "0 < duration <= 24h (M7)"
+        bool IsValidForSpeed "Tạm theo M9, chờ OD-07"
+        bool IsValidForTipRatio "payment 1 và fare > 0"
+        bool IsNegativeTotalAmount "Quy tắc dấu: total_amount < 0"
+        bool IsInStudyPeriod "pickup 2022-2023"
+    }
+
+    DimDate {
+        int DateKey PK "YYYYMMDD, -1 ngoài phạm vi"
+        date FullDate
+        int DayOfMonth
+        int DayOfWeekNumber "ISO 1 = Thứ Hai"
+        string DayOfWeekName
+        bool IsWeekend
+        int MonthNumber
+        string MonthName
+        string YearMonth "YYYY-MM"
+        int Quarter
+        int Year
+        int DaysInMonth
+        bool IsUSFederalHoliday
+        string HolidayName
+        bool IsInStudyPeriod
+    }
+
+    DimTime {
+        int TimeKey PK "HHMM, 1440 phút"
+        int Hour24
+        int Minute
+        string HourLabel
+        string DaypartCode "Ranh giới chờ OD-08"
+        string DaypartName
+        int DaypartSortOrder
+        bool IsPeakSurchargeWindow "16:00-19:59"
+        bool IsOvernightSurchargeWindow "20:00-05:59"
+    }
+
+    DimTaxiZone {
+        int TaxiZoneKey PK "Surrogate; -1 = thiếu mã, khác ID 264"
+        int LocationID UK "BK 1-265"
+        string Borough
+        string Zone
+        string ServiceZone
+        bool HasGeometry "FALSE cho 264, 265"
+    }
+
+    DimVendor {
+        int VendorKey PK
+        int VendorID UK "BK mã gốc; 5, 6 chờ OD-04"
+        string VendorName
+        string VendorShortName
+    }
+
+    DimRateCode {
+        int RateCodeKey PK
+        int RatecodeID UK "BK 1-6, 99 riêng; NULL -> -1"
+        string RateDescription
+        string RateCategory
+        bool IsFlatFare
+    }
+
+    DimPaymentType {
+        int PaymentTypeKey PK
+        int PaymentTypeID UK "BK 1-6; mã 0 chờ OD-03"
+        string PaymentDescription
+        string PaymentGroup
+        bool AllowsElectronicTip
+    }
+
+    DimPassengerGroup {
+        int PassengerGroupKey PK "Smart key = giá trị; -1 = NULL"
+        int PassengerCountValue "NULL, 0-9, >=10"
+        string GroupCode "SOLO SMALL LARGE UNKNOWN (0, NULL)"
+        string GroupName
+        int GroupSortOrder
+        bool IsReportedCount
+    }
+
+    DimDistanceBand {
+        int DistanceBandKey PK "1-5; -1 = NULL hoặc âm"
+        string BandCode
+        string BandName
+        decimal LowerBoundMiles
+        decimal UpperBoundMiles
+        int SortOrder
+    }

@@ -34,10 +34,10 @@ Từ điển này đóng vai trò là cơ sở kỹ thuật nguồn (Source Evid
 | 13 | `mta_tax` | DOUBLE | USD ($) | Thuế giao thông công cộng đô thị (MTA Tax) | Fact Measure (Additive) | Thuế cố định $0.50 tự động kích hoạt cho các chuyến đi có biểu giá tính thuế. |
 | 14 | `tip_amount` | DOUBLE | USD ($) | Tiền tip (tiền boa) cho tài xế | Fact Measure (Additive) | **Chỉ tự động ghi nhận tiền tip qua thẻ tín dụng**. Khách tip bằng tiền mặt không được phản ánh (ghi nhận = 0). |
 | 15 | `tolls_amount` | DOUBLE | USD ($) | Tiền phí cầu đường / hầm đường bộ | Fact Measure (Additive) | Tổng số tiền phí cầu đường hành khách chi trả trong suốt chuyến đi. |
-| 16 | `improvement_surcharge`| DOUBLE | USD ($) | Phụ phí cải thiện phương tiện taxi | Fact Measure (Additive) | Phụ phí cố định $0.30 áp dụng từ năm 2015 nhằm hỗ trợ chương trình xe lăn và cải tiến đội xe. |
+| 16 | `improvement_surcharge`| DOUBLE | USD ($) | Phụ phí cải thiện phương tiện taxi | Fact Measure (Additive) | Phụ phí cố định $0.30 áp dụng từ năm 2015; từ 12/2022 tăng lên mức $1.00 theo quy định mới của TLC. |
 | 17 | `total_amount` | DOUBLE | USD ($) | Tổng số tiền thanh toán của chuyến đi | Fact Measure (Additive) | Tổng tiền thanh toán của hành khách. **Lưu ý: Không bao gồm tiền tip bằng tiền mặt**. |
 | 18 | `congestion_surcharge` | DOUBLE | USD ($) | Phụ phí chống ùn tắc bang New York | Fact Measure (Additive) | Phụ phí $2.50 áp dụng cho các cuốc xe đón, trả hoặc đi qua khu vực trung tâm Manhattan (phía Nam đường 96th). |
-| 19 | `airport_fee` | DOUBLE | USD ($) | Phí phục vụ sân bay | Fact Measure (Additive) | Phí $1.25 đối với các cuốc xe đón hoặc trả tại sân bay LaGuardia (LGA) và John F. Kennedy (JFK). |
+| 19 | `airport_fee` / `Airport_fee` | DOUBLE | USD ($) | Phí phục vụ sân bay | Fact Measure (Additive) | Phí ban đầu $1.25 đối với đón/trả tại LGA & JFK; từ 04/2023 tăng lên $1.75. Tên cột đổi thành `Airport_fee` từ tệp 2023-02. |
 
 ---
 

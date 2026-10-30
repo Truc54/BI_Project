@@ -52,8 +52,8 @@ Bảng tổng hợp tỷ lệ Null quan sát được trên các trường dữ 
 | `tolls_amount` | 0.00% | Mặc định 0.0 nếu không qua cầu đường thu phí. | Measure cộng dồn trong Fact. |
 | `improvement_surcharge`| 0.00% | Mặc định 0.30 hoặc 0.0. | Measure cộng dồn trong Fact. |
 | `total_amount` | 0.00% | Tổng tiền luôn được tính toán khi kết thúc chuyến. | Measure cộng dồn trong Fact. |
-| `congestion_surcharge` | **~2.5% – 3.5%** | Có giá trị Null ở một số chuyến ngoài vùng áp dụng. | Coi giá trị Null tương đương 0.00 USD. |
-| `airport_fee` | **~2.5% – 3.5%** | Có giá trị Null ở các chuyến không qua sân bay. | Coi giá trị Null tương đương 0.00 USD. |
+| `congestion_surcharge` | **~2.5% – 3.5%** | **Khối thiếu metadata:** Giá trị NULL trùng đúng 2.677.659 dòng thiếu metadata (OD-11), **không phải** chỉ là "ngoài vùng áp dụng". | Fact giữ nguyên NULL để phản ánh đúng nguồn; khi phân rã cước, nếu cần có thể tính 0.00 USD. |
+| `airport_fee` | **~2.5% – 3.5%** | **Khối thiếu metadata:** Giá trị NULL trùng đúng khối thiếu metadata (OD-11), **không phải** chỉ là "không qua sân bay". Tên cột đổi từ `airport_fee` sang `Airport_fee` từ 2023-02. | Fact giữ nguyên NULL theo đúng thiết kế của Lộc; đổi tên trường được giải quyết ở tầng nạp. |
 
 ---
 
@@ -112,3 +112,4 @@ Bảng tổng hợp tỷ lệ Null quan sát được trên các trường dữ 
    * Tỷ lệ tip = $\frac{\sum \text{tip\_amount}}{\sum \text{fare\_amount}}$ (Chỉ lọc trên `payment_type = 1` và `fare_amount > 0`).
    * Tốc độ = $\frac{\text{trip\_distance}}{\text{duration}}$ (Chỉ tính trên cuốc xe hợp lệ có cự ly và thời lượng dương).
 3. **Các chiều chuẩn:** `DimTaxiZone`, `DimVendor`, `DimRateCode`, `DimPaymentType` đã được chuẩn hóa đầy đủ thành viên, mã khóa và cờ logic tại tài liệu `reference_dimensions_logical.md`.
+

@@ -30,7 +30,7 @@ Phục vụ toàn bộ các phân tích không gian và địa lý (Spatial Anal
 
 | Tên thuộc tính logic | Tên cột logic | Kiểu dữ liệu | Vai trò / Ràng buộc | Định nghĩa nghiệp vụ & Quy tắc chuẩn hóa |
 |:---|:---|:---:|:---:|:---|
-| **Taxi Zone Key** | `TaxiZoneKey` | INTEGER | **Primary Key** (Surrogate) | Khóa thay thế duy nhất đại diện cho từng vùng địa lý trong kho dữ liệu (bắt đầu từ 1, -1 cho Unknown). |
+| **Taxi Zone Key** | `TaxiZoneKey` | INTEGER | **Primary Key** (Surrogate) | Khóa thay thế duy nhất đại diện cho từng vùng địa lý trong kho dữ liệu (bắt đầu từ 1, -1 cho giá trị lỗi/không hợp lệ). |
 | **Location ID** | `LocationID` | INTEGER | **Business Key** (Natural) | Mã định danh khu vực do NYC TLC ban hành (từ 1 đến 265). |
 | **Borough Name** | `Borough` | VARCHAR(50) | Attribute / Hierarchy Level | Tên quận thuộc NYC: `Manhattan`, `Queens`, `Brooklyn`, `Bronx`, `Staten Island`, `EWR`, hoặc `Unknown`. |
 | **Zone Name** | `Zone` | VARCHAR(100) | Attribute / Hierarchy Level | Tên cụ thể của tiểu vùng/khu phố (ví dụ: `Upper East Side South`, `JFK Airport`). |
@@ -40,13 +40,14 @@ Phục vụ toàn bộ các phân tích không gian và địa lý (Spatial Anal
 ### 2.3. Hệ thống phân cấp (Hierarchy)
 $$\text{Borough} \longrightarrow \text{Zone} \longrightarrow \text{LocationID}$$
 
-### 2.4. Quy tắc chuẩn hóa dữ liệu đặc thù & Giới hạn Shapefile
-* **Bảo toàn ID 264 và 265:**
-  * `LocationID = 264`: `Borough = 'Unknown'`, `Zone = 'Unknown / N/A'`, `ServiceZone = 'N/A'`, `HasGeometry = FALSE`.
-  * `LocationID = 265`: `Borough = 'Outside NYC'`, `Zone = 'Outside of NYC'`, `ServiceZone = 'N/A'`, `HasGeometry = FALSE`.
-  * **Quyết định mô hình:** Tuyệt đối không tự vẽ thêm hoặc phỏng đoán polygon cho 264 và 265. Giữ nguyên để bảo toàn toàn vẹn khóa ngoại từ bảng Fact.
-* **Bản ghi mặc định (Missing Member):**
+### 2.4. Quy tắc chuẩn hóa dữ liệu đặc thù & Giới hạn Shapefile (Đồng thuận OD-06)
+* **Bảo toàn nguyên vẹn giá trị gốc của ID 264 và 265 từ `taxi_zone_lookup.csv`:**
+  * `LocationID = 264`: `Borough = 'Unknown'`, `Zone = 'NV'`, `ServiceZone = 'N/A'`, `HasGeometry = FALSE`. (Theo đúng nguyên bản bảng lookup: Zone = 'NV' / 'N/A').
+  * `LocationID = 265`: `Borough = 'N/A'`, `Zone = 'Outside of NYC'`, `ServiceZone = 'N/A'`, `HasGeometry = FALSE`. (Giữ đúng Borough = 'N/A' từ nguồn, không tự sửa thành 'Outside NYC').
+  * **Quy tắc hình học:** Tuyệt đối không tự vẽ thêm hoặc phỏng đoán polygon cho 264 và 265. Giữ nguyên để bảo toàn toàn vẹn khóa ngoại từ bảng Fact.
+* **Bản ghi mặc định ngoại lệ (Missing Member `-1` - Phân biệt rõ với ID 264):**
   * `TaxiZoneKey = -1`: Dành cho các cuốc xe có `PULocationID` hoặc `DOLocationID` bị `NULL` hoặc mang giá trị lỗi ngoài dải 1–265.
+  * **Thuộc tính thành viên `-1`:** `LocationID = NULL`, `Borough = 'Thiếu mã vùng (Missing)'`, `Zone = 'Chưa xác định'`, `ServiceZone = 'N/A'`, `HasGeometry = FALSE`. (Đặt nhãn riêng biệt rõ ràng để khi roll-up không bị gộp trùng vào Borough `'Unknown'` của ID 264).
 
 ### 2.5. Cơ chế Role-Playing với Fact
 Bảng `DimTaxiZone` đóng 2 vai trò độc lập (Role-Playing Dimension) khi kết nối với `FactYellowTaxiTrip`:
@@ -69,13 +70,15 @@ Hỗ trợ phân tích thị phần, sản lượng chuyến đi và doanh thu c
 | **Vendor Name** | `VendorName` | VARCHAR(100) | Attribute | Tên pháp nhân đầy đủ theo quy định của TLC. |
 | **Vendor Short Name**| `VendorShortName`| VARCHAR(50) | Attribute | Tên viết tắt thông dụng trong ngành: `CMT`, `VeriFone (VTS/Curb)`. |
 
-### 3.3. Dữ liệu thành viên chuẩn (Standard Dimension Members)
+### 3.3. Dữ liệu thành viên chuẩn (Standard Dimension Members - Cập nhật OD-04)
 
-| `VendorKey` | `VendorID` | `VendorName` | `VendorShortName` | Ghi chú |
+| `VendorKey` | `VendorID` | `VendorName` | `VendorShortName` | Ghi chú & Nguồn gốc |
 |:---:|:---:|:---|:---|:---|
-| `1` | `1` | Creative Mobile Technologies, LLC | CMT | Nhà cung cấp thiết bị công nghệ TPEP. |
-| `2` | `2` | VeriFone Inc. | VeriFone / Curb | Nhà cung cấp thiết bị công nghệ TPEP. |
-| `-1` | `NULL / Khác` | Unknown / Unassigned Provider | Unknown | Giá trị mặc định khi mã bị thiếu hoặc lỗi. |
+| `1` | `1` | Creative Mobile Technologies, LLC | CMT | Nhà cung cấp thiết bị công nghệ TPEP chính thức. |
+| `2` | `2` | VeriFone Inc. | VeriFone (VTS/Curb) | Nhà cung cấp thiết bị công nghệ TPEP chính thức. Thống nhất tên gọi theo QĐ9 của Phúc. |
+| `5` | `5` | Unknown Vendor (Code 5) | Code 5 | Xuất hiện ở 143 dòng (01–09/2022). Giữ mã gốc theo OD-04, chưa có tên chính thức trong từ điển TLC 2022–2023. |
+| `6` | `6` | Unknown Vendor (Code 6) | Code 6 | Xuất hiện ở 68.269 dòng (2022–2023). Giữ mã gốc theo OD-04, thuộc khối thiếu metadata, chưa có tên trong từ điển TLC. |
+| `-1` | `NULL / Khác` | Missing / Invalid Vendor | Missing | Giá trị mặc định khi mã bị NULL hoặc mang giá trị lỗi khác ngoài danh mục. |
 
 ---
 
@@ -94,7 +97,7 @@ Phân tích cơ cấu chuyến đi theo loại hình dịch vụ (chuẩn nội 
 | **Rate Category** | `RateCategory` | VARCHAR(50) | Attribute | Nhóm phân loại: `Standard`, `Airport`, `Out of Town`, `Negotiated`, `Special`. |
 | **Is Flat Fare Flag** | `IsFlatFare` | BOOLEAN | Attribute Flag | Đánh dấu cuốc xe áp dụng giá cước cố định (Ví dụ: JFK flat fare = TRUE). |
 
-### 4.3. Dữ liệu thành viên chuẩn (Standard Dimension Members)
+### 4.3. Dữ liệu thành viên chuẩn (Standard Dimension Members - Cập nhật OD-05)
 
 | `RateCodeKey` | `RatecodeID` | `RateDescription` | `RateCategory` | `IsFlatFare` |
 |:---:|:---:|:---|:---|:---:|
@@ -104,8 +107,10 @@ Phân tích cơ cấu chuyến đi theo loại hình dịch vụ (chuẩn nội 
 | `4` | `4` | Nassau or Westchester | Out of Town | FALSE |
 | `5` | `5` | Negotiated fare | Negotiated | FALSE |
 | `6` | `6` | Group ride | Special | FALSE |
-| `99` | `99` | Special / Flexible Rate | Special | FALSE |
-| `-1` | `Khác / NULL` | Unknown Rate Code | Unknown | FALSE |
+| `99` | `99` | Special / Flexible Rate (Code 99) | Special | FALSE |
+| `-1` | `Khác / NULL` | Missing / Invalid Rate Code | Unknown | FALSE |
+
+*(Lưu ý: RatecodeID = 99 có 347.274 dòng trong dữ liệu thực tế, được tách riêng thành thành viên độc lập `RateCodeKey = 99` theo quyết định OD-05, không gộp vào `-1`).*
 
 ---
 
@@ -124,17 +129,18 @@ Theo dõi số lượng và tỷ trọng các kênh thanh toán theo khu vực v
 | **Payment Group** | `PaymentGroup` | VARCHAR(50) | Attribute / Hierarchy | Nhóm thanh toán cấp cao: `Electronic`, `Cash`, `Non-Revenue / Exception`. |
 | **Allows Electronic Tip**| `AllowsElectronicTip`| BOOLEAN | Analytical Flag | `TRUE` đối với Thẻ tín dụng (`1`), `FALSE` đối với tiền mặt và các loại khác. |
 
-### 5.3. Dữ liệu thành viên chuẩn (Standard Dimension Members)
+### 5.3. Dữ liệu thành viên chuẩn (Standard Dimension Members - Cập nhật OD-03)
 
-| `PaymentTypeKey` | `PaymentTypeID` | `PaymentDescription` | `PaymentGroup` | `AllowsElectronicTip` | Ý nghĩa phân tích |
+| `PaymentTypeKey` | `PaymentTypeID` | `PaymentDescription` | `PaymentGroup` | `AllowsElectronicTip` | Ý nghĩa phân tích & Bằng chứng nguồn |
 |:---:|:---:|:---|:---|:---:|:---|
-| `1` | `1` | Credit card | Electronic | **TRUE** | Kênh thanh toán duy nhất có ghi nhận tiền boa (`tip_amount`). |
-| `2` | `2` | Cash | Cash | FALSE | Tiền mặt; tiền boa không được ghi nhận trong hệ thống. |
+| `0` | `0` | Code 0 (Chưa có trong từ điển TLC) | Unknown | FALSE | **Thêm theo OD-03:** Chiếm 2.677.659 dòng (3,43%), trùng khối thiếu metadata; giữ mã gốc riêng, không gộp vào `-1`. |
+| `1` | `1` | Credit card | Electronic | **TRUE** | Kênh thanh toán duy nhất có ghi nhận tiền boa (`tip_amount`). Cơ sở tính Tip Ratio. |
+| `2` | `2` | Cash | Cash | FALSE | Tiền mặt; tiền boa không được ghi nhận trong hệ thống (luôn = 0.00). |
 | `3` | `3` | No charge | Non-Revenue | FALSE | Chuyến đi miễn phí / không thu cước. |
 | `4` | `4` | Dispute | Exception | FALSE | Giao dịch tranh chấp hoặc có khiếu nại cước. |
 | `5` | `5` | Unknown | Exception | FALSE | Phương thức thanh toán không xác định từ thiết bị. |
-| `6` | `6` | Voided trip | Exception | FALSE | Cuốc xe bị hủy sau khi bật đồng hồ tính cước. |
-| `-1` | `Khác / NULL` | Missing / Not Specified | Unknown | FALSE | Giá trị rỗng hoặc ngoài danh mục chuẩn. |
+| `6` | `6` | Voided trip | Exception | FALSE | Cuốc xe bị hủy sau khi bật đồng hồ (giữ thành viên chuẩn TLC dù thực tế ít xuất hiện). |
+| `-1` | `Khác / NULL` | Missing / Invalid Payment Type | Unknown | FALSE | Dành riêng cho các trường hợp giá trị NULL hoặc lỗi ngoài dải mã 0–6. |
 
 ---
 
@@ -174,3 +180,4 @@ Theo dõi số lượng và tỷ trọng các kênh thanh toán theo khu vực v
 ```
 
 Tài liệu này hoàn tất phần trách nhiệm của **Dũng** về thiết kế các chiều chuẩn tham chiếu và bằng chứng dữ liệu nguồn, làm đầu vào trực tiếp để **Lộc** thiết kế cấu trúc `FactYellowTaxiTrip` và vẽ sơ đồ `dds_logical_model.drawio`.
+

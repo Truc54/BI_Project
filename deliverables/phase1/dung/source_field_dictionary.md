@@ -45,19 +45,21 @@ Từ điển này đóng vai trò là cơ sở kỹ thuật nguồn (Source Evid
 
 Nhằm đảm bảo tính chính xác và không tự suy đoán, dưới đây là định nghĩa chuẩn theo tài liệu của Ủy ban NYC TLC áp dụng cho dữ liệu 2022–2023:
 
-### 3.1. Mã nhà cung cấp công nghệ (`VendorID`)
+### 3.1. Mã nhà cung cấp công nghệ (`VendorID` - Cập nhật OD-04)
 
 | Mã thô (Raw Code) | Tên nhà cung cấp (TLC Official Name) | Tên viết tắt thông dụng | Ghi chú & Đánh giá |
 |:---:|:---|:---:|:---|
 | `1` | Creative Mobile Technologies, LLC | CMT | Nhà cung cấp thiết bị công nghệ TPEP trên xe taxi. |
-| `2` | VeriFone Inc. | VTS / Curb | Nhà cung cấp thiết bị công nghệ TPEP trên xe taxi. |
-| *Khác / NULL* | Unknown Provider | UNKNOWN | Ghi nhận các trường hợp mã lỗi hoặc không xác định từ dữ liệu nguồn. |
+| `2` | VeriFone Inc. | VeriFone (VTS/Curb) | Nhà cung cấp thiết bị công nghệ TPEP trên xe taxi (thống nhất theo QĐ9 của Phúc). |
+| `5` | Unknown Provider (Code 5) | Code 5 | Xuất hiện ở 143 dòng (01–09/2022). Giữ nguyên mã gốc theo OD-04, chưa có tên trong từ điển TLC 2022–2023. |
+| `6` | Unknown Provider (Code 6) | Code 6 | Xuất hiện ở 68.269 dòng (2022–2023). Giữ nguyên mã gốc theo OD-04, thuộc khối thiếu metadata. |
+| *Khác / NULL* | Missing / Invalid Provider | UNKNOWN | Gán về bản ghi `VendorKey = -1`. |
 
 > **Lưu ý mô hình hóa:** Giữ nguyên giá trị khóa tự nhiên `VendorID` trong mô hình chiều, không tự ý gộp nhóm nếu không có quy định từ TLC.
 
 ---
 
-### 3.2. Mã loại biểu giá (`RatecodeID`)
+### 3.2. Mã loại biểu giá (`RatecodeID` - Cập nhật OD-05)
 
 | Mã thô (Raw Code) | Tên biểu giá chuẩn TLC (Rate Description) | Chi tiết cách áp dụng | Ghi chú mô hình hóa |
 |:---:|:---|:---|:---|
@@ -67,21 +69,23 @@ Nhằm đảm bảo tính chính xác và không tự suy đoán, dưới đây 
 | `4` | Nassau or Westchester | Biểu giá đi các hạt ngoại thành Nassau hoặc Westchester. | Tính theo đồng hồ nội đô + biểu giá ngoài thành phố. |
 | `5` | Negotiated fare | Giá cước thỏa thuận trực tiếp giữa tài xế và hành khách. | Không bắt buộc theo đồng hồ tiêu chuẩn. |
 | `6` | Group ride | Chuyến đi ghép nhóm nhiều hành khách. | Rất hiếm gặp trong dữ liệu hiện đại. |
-| `99` / *Khác / NULL* | Unknown / Special | Biểu giá không xác định hoặc lỗi mã hóa trên taximeter. | Gán về bản ghi `RateCodeKey = -1` (Unknown). |
+| `99` | Special / Flexible Rate | Biểu giá mã 99 (xuất hiện ở 347.274 dòng). | **Tách riêng thành viên `RateCodeKey = 99` theo OD-05**, không gộp vào -1. |
+| *Khác / NULL* | Missing / Invalid Rate Code | Giá trị NULL (2.677.659 dòng) hoặc mã lỗi khác. | Gán về bản ghi `RateCodeKey = -1` (Unknown). |
 
 ---
 
-### 3.3. Mã phương thức thanh toán (`payment_type`)
+### 3.3. Mã phương thức thanh toán (`payment_type` - Cập nhật OD-03)
 
 | Mã thô (Raw Code) | Phương thức thanh toán (TLC Description) | Đặc tính ghi nhận dữ liệu | Lưu ý quan trọng cho phân tích |
 |:---:|:---|:---|:---|
+| `0` | Mã 0 (Chưa có trong từ điển TLC 2022–2023) | **Xuất hiện 2.677.659 dòng (3,43%)** trong khối thiếu metadata. | **Thêm thành viên riêng `PaymentTypeKey = 0` theo OD-03**, không gộp vào -1. |
 | `1` | Credit card | Thanh toán bằng thẻ ngân hàng qua thiết bị TPEP. | **Có ghi nhận `tip_amount` đầy đủ**. Dùng cho tính Tip Ratio. |
 | `2` | Cash | Thanh toán bằng tiền mặt trực tiếp cho tài xế. | **`tip_amount` luôn được ghi nhận là 0.00** trên hệ thống. |
 | `3` | No charge | Chuyến xe không tính cước (miễn phí). | Thường có `fare_amount = 0` hoặc các chuyến công vụ. |
 | `4` | Dispute | Giao dịch tranh chấp / khiếu nại cước. | Có thể xuất hiện số tiền âm hoặc đảo giao dịch. |
 | `5` | Unknown | Phương thức không xác định. | Giá trị không hợp lệ từ nguồn. |
-| `6` | Voided trip | Cuốc xe bị hủy sau khi bật đồng hồ. | Cần tách biệt với các chuyến đi thành công thông thường. |
-| *Khác / NULL* | Missing / Unknown | Giá trị trống hoặc ngoài danh mục 1–6. | Gán về bản ghi `PaymentTypeKey = -1` (Unknown). |
+| `6` | Voided trip | Cuốc xe bị hủy sau khi bật đồng hồ. | Cần tách biệt với các chuyến đi thành công thông thường (giữ thành viên chuẩn). |
+| *Khác / NULL* | Missing / Invalid | Giá trị trống (NULL) hoặc ngoài dải 0–6. | Gán về bản ghi `PaymentTypeKey = -1` (Unknown). |
 
 ---
 
@@ -101,3 +105,4 @@ Nhằm đảm bảo tính chính xác và không tự suy đoán, dưới đây 
 1. **Khóa logic và Surrogate Keys:** Các bảng Dimension trong kho dữ liệu sẽ sinh khóa thay thế (Surrogate Key kiểu số nguyên dạng `VendorKey`, `RateCodeKey`, `PaymentTypeKey`, `TaxiZoneKey`) và lưu giữ mã nguồn gốc làm Khóa nghiệp vụ tự nhiên (Natural Business Key).
 2. **Xử lý giá trị NULL/Dị thường:** Thiết lập bản ghi mặc định `Key = -1` với mô tả `Unknown / Missing` cho tất cả các chiều để đảm bảo tính toàn vẹn khóa ngoại (Referential Integrity) mà không làm mất bản ghi Fact khi nạp dữ liệu.
 3. **Phân biệt vai trò đón/trả:** `PULocationID` và `DOLocationID` tham chiếu cùng một chiều `DimTaxiZone` dưới 2 vai trò riêng biệt (Pickup Zone Role và Dropoff Zone Role).
+

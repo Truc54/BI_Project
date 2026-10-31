@@ -1,79 +1,82 @@
-# Phase 1 Member Plan: Trực
+# Kế hoạch công việc Phase 1: Trực
 
-## Ownership
+## Phạm vi phụ trách
 
-**Primary workstream:** write the clear description and physical specification of the integrated DDS, then verify that its tables and relationships can answer every required project question.
+**Đầu việc chính:** mô tả mô hình DDS tích hợp, lập đặc tả vật lý và kiểm tra các bảng, quan hệ có đáp ứng toàn bộ câu hỏi của dự án hay không.
 
-**Effort target:** approximately 21 hours (planning range 20–22 hours).
+**Thời lượng dự kiến:** khoảng 21 giờ (khoảng 20–22 giờ).
 
-**Main outputs:** DDS model narrative, physical data dictionary/schema, and requirement-to-schema coverage matrix.
+**Đầu ra chính:** mô tả DDS, từ điển/lược đồ dữ liệu vật lý và ma trận đối chiếu yêu cầu với lược đồ.
 
-## Scope boundary
+## Giới hạn phạm vi
 
-This is modeling documentation and validation only. It does not include pipeline design or implementation, intermediate-layer design, automation, ingestion metadata, ETL test matrices, data loading, or test execution.
+Chỉ thực hiện tài liệu hóa và kiểm tra mô hình. Không bao gồm thiết kế hay xây dựng luồng xử lý dữ liệu, thiết kế tầng trung gian, tự động hóa, siêu dữ liệu nạp dữ liệu, ma trận kiểm thử ETL, nạp dữ liệu hoặc chạy kiểm thử.
 
-## Work packages
+## Các gói công việc
 
-### A. Review the modeling inputs (about 3 hours)
+### A. Rà soát đầu vào mô hình (khoảng 3 giờ)
 
-- Read the assignment, [Phase 1 overview](phase1_overview.md), Phúc’s metric/requirement matrix, Dũng and Lộc’s joint profile, and their logical star schema.
-- Record the agreed fact grain, each dimension’s purpose, dimension roles, hierarchies, and assumptions.
-- Note open choices or conflicts before writing the final descriptions; send them to the relevant owner for resolution.
+- Đọc đề bài, [Tổng quan Phase 1](phase1_overview.md), ma trận chỉ số đo/yêu cầu của Phúc, hồ sơ chung của Dũng và Lộc, cùng lược đồ sao logic.
+- Ghi nhận mức hạt Fact đã thống nhất, mục đích từng chiều, các vai trò chiều, phân cấp và giả định.
+- Ghi lại các lựa chọn còn mở hoặc điểm chưa thống nhất trước khi viết tài liệu cuối; giao rõ chủ sở hữu cần xem xét.
 
-### B. Write the DDS model description (about 4 hours)
+### B. Viết mô tả mô hình DDS (khoảng 4 giờ)
 
-- Explain the business process represented by the DDS and the one-row-per-source-trip-record grain.
-- Describe the purpose and analytical role of the trip Fact and every dimension.
-- Explain how pickup/drop-off date, time, and zone roles work, how route direction is represented, and how borough/zone roll-ups work.
-- Describe the date/time, borough/zone, provider, rate, payment, passenger-group, and distance hierarchies/attributes.
-- Document assumptions and source limitations in plain language so a reader can understand why each table and relationship exists.
+- Giải thích quy trình nghiệp vụ và mức hạt một dòng cho mỗi bản ghi chuyến đi nguồn.
+- Mô tả mục đích, vai trò phân tích của bảng Fact chuyến đi và từng bảng chiều.
+- Giải thích vai trò ngày, giờ và zone đón/trả; hướng tuyến; cách tổng hợp borough/zone.
+- Mô tả các phân cấp/thuộc tính ngày-giờ, borough-zone, vendor, rate, payment, nhóm khách và cự ly.
+- Viết rõ giả định và giới hạn nguồn để người đọc hiểu mục đích của từng bảng và quan hệ.
 
-### C. Write the physical DDS specification (about 7 hours)
+### C. Viết đặc tả vật lý DDS (khoảng 7 giờ)
 
-For every Fact and Dimension, document:
+Với từng bảng Fact và bảng chiều, ghi rõ:
 
-- Table/column names, data types, lengths/precision, units, nullability, definitions, and business meaning.
-- Primary keys, foreign keys, dimension business keys, and surrogate-key semantics.
-- Types/precision for dates, times, counts, miles, amounts, codes, and derived attributes.
-- Separate pickup/drop-off foreign-key roles for date, time, and zone.
-- Unknown/null semantics, including the difference between unknown values and valid lookup IDs 264/265 that lack polygons.
-- Optional fields in the selected 2022–2023 schemas, distinguishing unavailable from zero.
+- Tên bảng/cột, kiểu dữ liệu, độ dài/độ chính xác, đơn vị, cho phép NULL hay không, định nghĩa và ý nghĩa nghiệp vụ.
+- Khóa chính, khóa ngoại, khóa nghiệp vụ của chiều và ý nghĩa khóa thay thế.
+- Kiểu/độ chính xác phù hợp cho ngày, giờ, số đếm, dặm, tiền, mã và thuộc tính dẫn xuất.
+- Khóa vai trò riêng cho ngày, giờ và zone đón/trả.
+- Ý nghĩa của giá trị không xác định/NULL, gồm sự khác biệt với ID 264/265 hợp lệ nhưng không có vùng hình học.
+- Các trường tùy chọn trong lược đồ 2022–2023, phân biệt không có dữ liệu với giá trị 0.
 
-### D. Validate question coverage against the schema (about 5 hours)
+### D. Đối chiếu yêu cầu với lược đồ (khoảng 5 giờ)
 
-For each core requirement C1–C8 and extension E1–E5:
+Với từng yêu cầu cốt lõi C1–C8 và mở rộng E1–E5:
 
-- Name the Fact measures, dimensions, dimension roles, and hierarchy needed to answer the question.
-- Describe the grouping path and any required derivation or denominator, using Phúc’s metric definitions.
-- Confirm that the selected 2022–2023 source profile contains the required attributes.
-- Flag gaps, ambiguous terms, or assumptions that prevent a reliable answer; send each issue to Phúc, Dũng, or Lộc for resolution.
-- Confirm special cases: pickup vs drop-off borough, ordered route pairs, tip ratio, speed, partial-period comparisons, and IDs 264/265 without geometry.
+- Ghi tên measures, dimensions, vai trò chiều và phân cấp cần để trả lời.
+- Mô tả đường nhóm dữ liệu và phép tính/mẫu số cần thiết theo định nghĩa metric của Phúc.
+- Xác nhận hồ sơ nguồn 2022–2023 có các thuộc tính cần thiết.
+- Ghi rõ khoảng trống, thuật ngữ chưa rõ hoặc giả định ảnh hưởng độ tin cậy; nêu chủ sở hữu cần giải quyết.
+- Kiểm tra các trường hợp đặc biệt: quận đón/trả, cặp tuyến có hướng, tỷ lệ tiền tip, tốc độ, so sánh kỳ chưa đầy đủ và ID 264/265 không có vùng hình học.
 
-### E. Integrate, review, and publish (about 2 hours)
+### E. Tích hợp, rà soát và công bố (khoảng 2 giờ)
 
-- Review the descriptions/specification with all members for consistency with the joint logical star schema.
-- Resolve comments, version the physical model package, and publish the final coverage matrix and open-decision list.
+- Rà soát mô tả/đặc tả với các thành viên để bảo đảm nhất quán với lược đồ sao logic chung.
+- Tổng hợp nhận xét, quản lý phiên bản gói mô hình vật lý, công bố ma trận bao phủ và danh sách quyết định còn mở.
 
-## Deliverables
+## Đầu ra
 
-- `dds_model_description.md`: fact grain, purpose of tables, relationships, roles, hierarchies, assumptions, and source limitations.
-- `dds_physical_spec.xlsx` or `.md`: tables, columns, types, precision, nullability, keys, and definitions.
-- `dds_physical_model.drawio`: annotated DDS diagram matching the approved logical star schema.
-- `physical_model_coverage.md`: C1–C8/E1–E5 mapped to tables, fields, roles, and calculation needs.
-- `dds_model_decisions.md`: resolved and open model questions with rationale and owner.
+- [dds_model_description.md](../../deliverables/phase1/truc/dds_model_description.md): mức hạt Fact, mục đích các bảng, quan hệ, vai trò, phân cấp, giả định và giới hạn nguồn.
+- [dds_physical_spec.md](../../deliverables/phase1/truc/dds_physical_spec.md): bảng, cột, kiểu, độ chính xác, cho phép NULL hay không, khóa và định nghĩa.
+- [physical_model_coverage.md](../../deliverables/phase1/truc/physical_model_coverage.md): đối chiếu C1–C8/E1–E5 với bảng, trường, vai trò và phép tính.
+- [dds_model_decisions.md](../../deliverables/phase1/truc/dds_model_decisions.md): câu hỏi mô hình đã xử lý và còn mở, lý do cùng chủ sở hữu.
 
-## Acceptance checklist
+Sơ đồ tổng thể dùng lược đồ logic chung của Dũng và Lộc; không tạo sơ đồ vật lý trùng lặp.
 
-- [ ] Model description explains why each Fact/Dimension exists and how their relationships support analysis.
-- [ ] Physical DDS fields, types, precision, keys, units, and nullability are explicit.
-- [ ] Pickup/drop-off roles and route direction are clearly described.
-- [ ] Every required question has a documented schema path or a clearly recorded model gap.
-- [ ] Metric coverage matches Phúc’s definitions and Dũng/Lộc’s observed 2022–2023 source profile.
-- [ ] IDs 264/265 are modeled without inventing polygon geometry.
-- [ ] The final package contains model descriptions/specifications and no pipeline or loading work.
+## Tiêu chí nghiệm thu
 
-## Dependencies and handoff
+- [x] Mô tả mô hình giải thích mục đích của từng bảng Fact/bảng chiều và cách quan hệ hỗ trợ phân tích.
+- [x] Đặc tả vật lý ghi rõ trường, kiểu, độ chính xác, khóa, đơn vị và nullability.
+- [x] Vai trò đón/trả và hướng tuyến được mô tả rõ.
+- [x] Mỗi yêu cầu có đường đi trong lược đồ hoặc khoảng trống được ghi rõ.
+- [x] Ma trận chỉ số đo đối chiếu định nghĩa của Phúc với hồ sơ nguồn 2022–2023 của Dũng/Lộc; các điểm chưa chốt được đánh dấu.
+- [x] ID 264/265 được mô hình hóa mà không tạo polygon giả.
+- [x] Gói đầu ra gồm mô tả/đặc tả mô hình, không có công việc pipeline hay nạp dữ liệu.
 
-- **From Phúc:** approved business definitions, metric formulas, and requirement matrix.
-- **From Dũng and Lộc:** joint profile, logical star schema, and source-backed dimension definitions.
-- **To the team:** model narrative, physical DDS dictionary/diagram, and completed question-coverage review.
+**Tình trạng rà soát:** các tài liệu đã được tích hợp trong thư mục dự án; chưa có xác nhận rà soát từ cả nhóm. Các quyết định OD-01–04, OD-07–09, C7-TIE và việc duyệt sơ đồ khái niệm vẫn cần chủ sở hữu xem xét; chi tiết nằm trong `dds_model_decisions.md`.
+
+## Phụ thuộc và bàn giao
+
+- **Từ Phúc:** định nghĩa nghiệp vụ đã thống nhất, công thức metric và ma trận yêu cầu.
+- **Từ Dũng và Lộc:** hồ sơ chung, lược đồ sao logic và định nghĩa chiều có căn cứ từ nguồn.
+- **Bàn giao cho nhóm:** mô tả mô hình, từ điển vật lý và kết quả đối chiếu yêu cầu với lược đồ.

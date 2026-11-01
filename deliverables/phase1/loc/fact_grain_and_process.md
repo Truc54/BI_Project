@@ -6,6 +6,8 @@
 
 > Mọi số liệu được đo trên 24 tệp đã chọn bằng [profile_selected_data.py](profile_selected_data.py), kết quả lưu tại [profile_results.json](profile_results.json) (tên khóa JSON ghi trong ngoặc vuông). Trừ khi ghi khác, tập tính là **toàn bộ 77.966.324 dòng** (`ALL_ROWS`). Kết quả chỉ đại diện cho 2022–2023, không suy rộng cho 2009–2026.
 
+> **Cập nhật sau khi nhóm chốt quyết định (khớp báo cáo Phase 1):** các điểm mở OD-01 … OD-15 đã được chốt; nội dung dưới đây đã sửa theo kết quả cuối. Bảng tổng hợp xem [logical_model_decisions.md](logical_model_decisions.md) §2.
+
 ---
 
 ## 1. Quy trình nghiệp vụ (Business Process)
@@ -44,7 +46,7 @@ Nguồn không có khóa nghiệp vụ, nên một bản ghi được nhận di�
 > `(SourceFileMonth, SourceRowNumber)`: tháng của tệp nguồn và số thứ tự dòng trong tệp (bắt đầu từ 0).
 
 - Cặp này duy nhất theo cấu tạo, miễn tệp nguồn không bị thay thế. Overview có ghi manifest chứa SHA-256 của từng tệp, dùng để kiểm chứng điều kiện này.
-- Cả hai thuộc tính là **degenerate dimension** trong Fact. `SourceRowNumber` là đề xuất của Lộc; Trực quyết định ở mức vật lý có lưu hay không (xem [OD-13](logical_model_decisions.md)). Nếu không lưu, tuyên bố định danh ở trên không còn kiểm chứng được trong DDS.
+- Cả hai thuộc tính là **degenerate dimension** trong Fact. `SourceRowNumber` do Lộc đề xuất và **đã được lưu ở mức vật lý** (kiểu `INT`, [OD-13](logical_model_decisions.md) đã chốt), nên tuyên bố định danh ở trên kiểm chứng được trong DDS.
 - `TripRecordKey` là **surrogate key** do DDS sinh ra. Nó không phải khóa nghiệp vụ và không mang ý nghĩa ngoài DDS.
 
 ## 3. Phạm vi bản ghi vào Fact (Fact Scope)
@@ -52,22 +54,22 @@ Nguồn không có khóa nghiệp vụ, nên một bản ghi được nhận di�
 | Quy tắc | Quyết định | Lý do |
 |:---|:---|:---|
 | Bản ghi nào được đưa vào? | **Toàn bộ 77.966.324 bản ghi** của 24 tệp | Bảo toàn grain "bản ghi nguồn"; đối soát được tổng số dòng với tệp |
-| Pickup ngoài 2022–2023 (623 dòng) [`population_counts`] | Giữ, gắn `IsInStudyPeriod = FALSE` | Báo cáo mặc định lọc theo cờ; không xóa dữ liệu nguồn. Dũng đề xuất lọc ở ETL; điểm này còn mở ở [OD-10](logical_model_decisions.md) |
+| Pickup ngoài 2022–2023 (623 dòng) [`population_counts`] | Giữ, gắn `IsInStudyPeriod = FALSE` | Báo cáo mặc định lọc theo cờ; không xóa dữ liệu nguồn. **Đã chốt ([OD-10](logical_model_decisions.md)):** giữ trong DDS, không lọc bỏ ở ETL |
 | Ngày ngoài phạm vi `DimDate` (2021-01-01 … 2024-12-31) | Khóa ngày trỏ thành viên `-1`; timestamp gốc vẫn giữ trong Fact | 593 dòng có pickup ngoài phạm vi (năm 2001–2014); 455 dòng có drop-off ngoài phạm vi, sớm nhất năm 1970 [`date_range_vs_dimdate`] |
-| Dòng có `total_amount < 0` | Giữ, gắn `IsNegativeTotalAmount = TRUE` | Doanh thu ròng cần cả dòng âm. Cách đếm chuyến vẫn mở (§4) |
+| Dòng có `total_amount < 0` | Giữ, gắn `IsNegativeTotalAmount = TRUE` | Doanh thu ròng cần cả dòng âm. Cách đếm chuyến đã chốt ở OD-01 (§4.1) |
 | Dòng trùng hoàn toàn (3 dòng) | Giữ | Không có căn cứ chắc chắn để coi là lỗi |
 
 ## 4. Hệ quả của grain đối với các chỉ số
 
-### 4.1. Trip Count: chưa chốt (OD-01)
+### 4.1. Trip Count: đã chốt (OD-01)
 
-Phúc hiện định nghĩa M1 là `COUNT(FactTripKey)` ([metric_glossary.md](../phuc/metric_glossary.md) dòng 14), tức đếm mọi bản ghi. Trên grain "bản ghi nguồn" có ít nhất ba cách đếm khả dĩ:
+Phúc ban đầu định nghĩa M1 là `COUNT(FactTripKey)` ([metric_glossary.md](../phuc/metric_glossary.md) dòng 14), tức đếm mọi bản ghi. Trên grain "bản ghi nguồn" có ít nhất ba cách đếm khả dĩ:
 
 | Định nghĩa | Công thức trên Fact | Ứng viên cặp đảo được đếm | Dòng âm không có cặp (74.390) | Hỗ trợ trong mô hình |
 |:---|:---|:---|:---|:---|
 | **Trip Record Count** (đúng M1 hiện hành) | `SUM(TripRecordCount)` | 2 lần | đếm | Có sẵn |
 | **Operational Trip Count** | `SUM(TripRecordCount)` với `IsNegativeTotalAmount = FALSE` | **1 lần** (dòng dương còn lại) | không đếm | Có sẵn |
-| **Net Trip Count** (loại cuốc bị hủy) | Loại cả hai dòng của ứng viên cặp đảo | 0 lần | không đếm | **Chưa có**: cần thêm cờ cấp cặp, ví dụ `IsInCandidateReversalPair`, tính được khi so sánh nhiều dòng |
+| **Net Trip Count** (loại cuốc bị hủy) | Loại cả hai dòng của ứng viên cặp đảo | 0 lần | không đếm | **Không áp dụng ở Phase 1** (OD-01); nếu cần sau này phải thêm cờ cấp cặp, ví dụ `IsInCandidateReversalPair` |
 
 - Loại dòng âm (Operational) **không** loại cuốc bị hủy: dòng dương gốc của nó vẫn được đếm một lần. Muốn coi cuốc bị hủy là "không có chuyến" thì phải dùng Net Trip Count.
 - **Doanh thu không phụ thuộc lựa chọn này.** Total Revenue = `SUM(TotalAmount)` trên mọi dòng trong kỳ, nên cặp đảo tự triệt tiêu.
@@ -75,7 +77,7 @@ Phúc hiện định nghĩa M1 là `COUNT(FactTripKey)` ([metric_glossary.md](..
   - Tử số của M1, và mẫu số của M10 (Revenue/Trip), M2 (khách trung bình) và các trung bình theo chuyến.
   - Mọi số đếm trong C1–C7, xếp hạng tuyến C7, hiệu ứng khối lượng ở E2, Revenue/Trip ở E3, tăng trưởng số chuyến ở E4.
   - Chênh lệch giữa Record và Operational là 632.589 dòng (0,81% tập `ALL_ROWS`).
-- **Lộc không tự chốt.** Mô hình giữ đủ dữ liệu cho hai định nghĩa đầu; định nghĩa thứ ba cần bổ sung cờ nếu Phúc chọn.
+- **Đã chốt (OD-01):** nhóm dùng hai định nghĩa đầu. `TripRecordCount` đếm mọi dòng nguồn; Operational Trip Count loại các dòng `TotalAmount < 0`. Đây là quy ước KPI, không khẳng định TLC gắn cờ hoàn tiền/đảo bút toán. Net Trip Count không áp dụng, nên mô hình không thêm cờ cấp cặp. Mỗi kết quả phải ghi rõ đang dùng loại đếm nào.
 
 ### 4.2. Các chỉ số khác
 

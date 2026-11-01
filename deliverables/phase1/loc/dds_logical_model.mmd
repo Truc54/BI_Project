@@ -17,7 +17,7 @@ erDiagram
     FactYellowTaxiTrip {
         bigint TripRecordKey PK "Surrogate; grain = 1 bản ghi nguồn"
         string SourceFileMonth "DD: tệp nguồn YYYY-MM"
-        int SourceRowNumber "DD: dòng trong tệp, đề xuất OD-13"
+        int SourceRowNumber "DD: dòng trong tệp (OD-13)"
         int PickupDateKey FK "DimDate"
         int PickupTimeKey FK "DimTime"
         int DropoffDateKey FK "DimDate"
@@ -43,13 +43,12 @@ erDiagram
         decimal ImprovementSurchargeAmount "USD"
         decimal CongestionSurchargeAmount "USD, NULL = không ghi nhận"
         decimal AirportFeeAmount "USD, NULL = không ghi nhận"
-        decimal TotalAmount "USD, chuẩn cho Total Revenue"
+        decimal TotalAmount "USD, doanh thu chuẩn (OD-02)"
         int TripDurationSeconds "Dẫn xuất, giữ cả âm"
-        decimal ExtraResidualAmount "Phần dư, đề xuất OD-02"
         bool IsValidDuration "0 < duration <= 24h (M7)"
-        bool IsValidForSpeed "Tạm theo M9, chờ OD-07"
+        bool IsValidForSpeed "OD-07: >=60s, >0.1 dặm, 1-80 mph"
         bool IsValidForTipRatio "payment 1 và fare > 0"
-        bool IsNegativeTotalAmount "Quy tắc dấu: total_amount < 0"
+        bool IsNegativeTotalAmount "TotalAmount < 0 (OD-01)"
         bool IsInStudyPeriod "pickup 2022-2023"
     }
 
@@ -66,8 +65,6 @@ erDiagram
         int Quarter
         int Year
         int DaysInMonth
-        bool IsUSFederalHoliday
-        string HolidayName
         bool IsInStudyPeriod
     }
 
@@ -76,11 +73,9 @@ erDiagram
         int Hour24
         int Minute
         string HourLabel
-        string DaypartCode "Ranh giới chờ OD-08"
+        string DaypartCode "OD-08: NIGHT MORN MID AFT EVE"
         string DaypartName
         int DaypartSortOrder
-        bool IsPeakSurchargeWindow "16:00-19:59"
-        bool IsOvernightSurchargeWindow "20:00-05:59"
     }
 
     DimTaxiZone {
@@ -94,7 +89,7 @@ erDiagram
 
     DimVendor {
         int VendorKey PK
-        int VendorID UK "BK mã gốc; 5, 6 chờ OD-04"
+        int VendorID UK "BK 1, 2, 5, 6 (OD-04)"
         string VendorName
         string VendorShortName
     }
@@ -109,7 +104,7 @@ erDiagram
 
     DimPaymentType {
         int PaymentTypeKey PK
-        int PaymentTypeID UK "BK 1-6; mã 0 chờ OD-03"
+        int PaymentTypeID UK "BK 0-6; 0 member riêng (OD-03)"
         string PaymentDescription
         string PaymentGroup
         bool AllowsElectronicTip

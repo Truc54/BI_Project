@@ -113,7 +113,7 @@ Nguồn: [`monthly`], [`passenger_groups`], [`distance_bands`], [`negative_total
   - **VendorID 1:** 19.405.822 / 20.511.594 dòng lệch (94,6%). Trong đó 18.029.769 dòng lệch đúng bằng `−congestion_surcharge`; 623.467 dòng bằng `−airport_fee`; 743.312 dòng bằng `−(congestion_surcharge + airport_fee)`. Ba trường hợp này cộng lại giải thích 99,95% số dòng lệch.
   - **VendorID 2:** 162.099 / 54.777.071 dòng lệch (0,3%).
 - [Suy luận] Số liệu **phù hợp với giả thuyết** rằng thiết bị của VendorID 1 ghi phụ phí ùn tắc và phí sân bay **cả trong `extra`** lẫn trong cột riêng. Nhóm chưa có tài liệu TLC xác nhận [Mở].
-- [Mô hình] Total Revenue = `SUM(total_amount)`. Phân rã cấu phần dùng phần dư `ExtraResidualAmount` là đề xuất đang chờ Phúc (OD-02); xem [Fact logic §6](fact_yellow_taxi_trip_logical.md#6-ghi-chú-về-các-khoản-tiền).
+- [Mô hình] Total Revenue = `SUM(total_amount)`. Không tạo `ExtraResidualAmount` (OD-02 đã chốt): từng cấu phần lưu riêng, không ép tổng cấu phần bằng `total_amount`; xem [Fact logic §6](fact_yellow_taxi_trip_logical.md#6-ghi-chú-về-các-khoản-tiền).
 
 **Mức phí thay đổi trong kỳ** [Đo] (`STUDY`, theo tháng pickup) [`fee_levels_by_pickup_month`, `fee_first_seen`]:
 
@@ -162,7 +162,7 @@ Kết quả này phù hợp với quy tắc tip ratio chỉ tính trên `payment
 | Dòng 55–56 | NULL do "ngoài vùng áp dụng / không qua sân bay" | Cùng khối 3,43% thiếu metadata | Sửa diễn giải: NULL là **không ghi nhận** (OD-11) |
 | Dòng 63 | Cước âm 0,15–0,25% | 0,81%; 88,2% có dòng dương tương ứng | Thay số; thêm phát hiện ứng viên cặp đảo |
 | Dòng 70 | Cự ly 0 là 1,0–1,8% | 1,73% | Thay bằng số đo |
-| Dòng 81 | "0 < duration ≤ 180 phút theo công thức của Phúc" | Phúc không có ngưỡng 180 phút (M7: > 24h là outlier; M9: lọc tốc độ). 84.794 dòng > 180 phút | Xin Phúc xác nhận (OD-07) |
+| Dòng 81 | "0 < duration ≤ 180 phút theo công thức của Phúc" | Phúc không có ngưỡng 180 phút (M7: > 24h là outlier; M9: lọc tốc độ). 84.794 dòng > 180 phút | Đã chốt ở OD-07: chỉ dùng bộ lọc M7/M9, không có ngưỡng 180 phút |
 | Dòng 89 | Passenger 0 là 1,0–2,0% | 1,73% | Thay bằng số đo |
 | Dòng 98 | Manhattan > 85% | 88,6% pickup / 88,3% drop-off | Thay bằng số đo |
 | Dòng 102 | 264/265 chiếm 0,5–1,2% | 1,22% pickup / 1,26% drop-off | Thay bằng số đo |

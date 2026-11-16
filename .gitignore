@@ -1,4 +1,14 @@
-﻿# Raw trip Parquet files - downloaded separately (see README.md)
+# Environment variables
+.env
+
+# Docker & Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+pgdata/
+mage_data/
+
+# Raw trip Parquet files - downloaded separately (see README.md)
 /dataset/
 
 # PDF documents (project brief, etc.)

@@ -10,6 +10,8 @@
 > Cột "Nguồn" là tên cột Parquet. Từ tệp 2023-02, `airport_fee` đổi tên thành `Airport_fee`; hai cột là cùng một trường logic.
 > Mọi tỷ lệ phần trăm tính trên toàn bộ 77.966.324 dòng, trừ khi ghi khác.
 
+> **Cập nhật sau khi nhóm chốt quyết định (khớp báo cáo Phase 1):** các điểm mở OD-01 … OD-15 đã được chốt; nội dung dưới đây đã sửa theo kết quả cuối. Bảng tổng hợp xem [logical_model_decisions.md](logical_model_decisions.md) §2.
+
 ---
 
 ## 1. Khóa và thuộc tính truy vết
@@ -18,7 +20,7 @@
 |:---|:---|:---|:---:|:---|
 | `TripRecordKey` | Surrogate PK | Sinh trong DDS | Không | **Không phải khóa nghiệp vụ**; nguồn không có `trip_id` |
 | `SourceFileMonth` | Degenerate dimension | Tháng của tệp nguồn (`YYYY-MM`) | Không | Khác tháng pickup ở 2.194 dòng [`monthly`] |
-| `SourceRowNumber` | Degenerate dimension (**đề xuất**, OD-13) | Thứ tự dòng trong tệp, bắt đầu từ 0 | Không | Cùng `SourceFileMonth` tạo định danh duy nhất của bản ghi nguồn |
+| `SourceRowNumber` | Degenerate dimension (đã chốt lưu, kiểu `INT`, OD-13) | Thứ tự dòng trong tệp, bắt đầu từ 0 | Không | Cùng `SourceFileMonth` tạo định danh duy nhất của bản ghi nguồn |
 
 ## 2. Khóa ngoại tới chiều (11 quan hệ, 6 trong đó là role-playing)
 
@@ -30,9 +32,9 @@
 | `DropoffTimeKey` | `DimTime` | Giờ:phút trả | Phần giờ:phút của `tpep_dropoff_datetime` | Luôn có giá trị |
 | `PickupTaxiZoneKey` | `DimTaxiZone` | Vùng đón | `PULocationID` | 264/265 là **thành viên hợp lệ**; NULL hoặc ngoài 1–265 → `-1` (0 dòng) [`location_ids`] |
 | `DropoffTaxiZoneKey` | `DimTaxiZone` | Vùng trả | `DOLocationID` | Như vùng đón |
-| `VendorKey` | `DimVendor` | Nhà cung cấp TPEP | `VendorID` | Mã 5 (143 dòng) và 6 (68.269 dòng) có xuất hiện; đề xuất mỗi mã một thành viên riêng giữ mã gốc (OD-04, Dũng chốt) |
-| `RateCodeKey` | `DimRateCode` | Biểu giá cuối chuyến | `RatecodeID` | NULL (3,43%) → `-1`; mã `99` (347.274 dòng) là thành viên riêng, nhất quán với `DimRateCode` §4.3 của Dũng (OD-05) |
-| `PaymentTypeKey` | `DimPaymentType` | Phương thức thanh toán | `payment_type` | Mã `0` (3,43%) đề xuất thành viên riêng, không gộp `-1` (OD-03, Dũng chốt) |
+| `VendorKey` | `DimVendor` | Nhà cung cấp TPEP | `VendorID` | Mã 5 (143 dòng) và 6 (68.269 dòng) có xuất hiện; mỗi mã là một thành viên riêng giữ mã gốc; VendorID 2 dùng nhãn "VeriFone Inc. (VeriFone / Curb / VTS)" (OD-04 đã chốt) |
+| `RateCodeKey` | `DimRateCode` | Biểu giá cuối chuyến | `RatecodeID` | NULL (3,43%) → `-1`; mã `99` (347.274 dòng) là thành viên riêng, nhãn "Special/Flexible Rate" (OD-05 đã chốt) |
+| `PaymentTypeKey` | `DimPaymentType` | Phương thức thanh toán | `payment_type` | Mã `0` (3,43%) là thành viên chính thức `PaymentTypeKey = 0`, không gộp `-1` (OD-03 đã chốt) |
 | `PassengerGroupKey` | `DimPassengerGroup` | Nhóm số khách | Dẫn xuất từ `passenger_count` | Xem [chiều hỗ trợ §3](supporting_dimensions_logical.md#3-dimpassengergroup) |
 | `DistanceBandKey` | `DimDistanceBand` | Dải cự ly | Dẫn xuất từ `trip_distance` | Xem [chiều hỗ trợ §4](supporting_dimensions_logical.md#4-dimdistanceband) |
 
@@ -76,11 +78,12 @@ Mọi thuộc tính dẫn xuất được tính tất định từ cột gốc t
 |:---|:---|:---|:---|:---|
 | `TripDurationSeconds` | `DropoffDateTime − PickupDateTime`, tính bằng giây, **giữ cả giá trị âm** | Measure; chỉ cộng dồn trên dòng `IsValidDuration` | M7, C7, E2, E3 | Chốt |
 | `IsValidDuration` | `0 < TripDurationSeconds ≤ 86.400` | Cờ | M7 (loại ≤ 0, > 24h là outlier); 77.918.162 dòng thỏa [`duration_speed_filters`] | Theo M7 |
-| `IsValidForSpeed` | `TripDurationSeconds ≥ 60` AND `TripDistanceMiles > 0,1` AND `1 ≤ tốc độ ≤ 80 mph` | Cờ | M9, E1; 76.060.704 dòng thỏa | **Tạm theo M9, chờ OD-07** |
+| `IsValidForSpeed` | `TripDurationSeconds ≥ 60` AND `TripDistanceMiles > 0,1` AND `1 ≤ tốc độ ≤ 80 mph` | Cờ | M9, E1; 76.060.704 dòng thỏa | Đã chốt (OD-07) |
 | `IsValidForTipRatio` | `payment_type = 1` AND `FareAmount > 0` | Cờ | M6, QĐ2, E1 | Theo QĐ2 |
-| `IsNegativeTotalAmount` | `TotalAmount < 0` | Cờ, chỉ là quy tắc nhận diện theo dấu | Lọc đơn giá; Operational Trip Count (OD-01) | Chốt quy tắc; ý nghĩa nghiệp vụ chưa chốt |
-| `IsInStudyPeriod` | `PickupDateTime` ∈ [2022-01-01, 2024-01-01) | Cờ | Bộ lọc mặc định của mọi báo cáo; 77.965.701 dòng | Chốt (OD-10 về cách xử lý dòng ngoài kỳ) |
-| `ExtraResidualAmount` | `TotalAmount − (Fare + MtaTax + Tip + Tolls + Improvement + coalesce(Congestion,0) + coalesce(AirportFee,0))` | Measure, cộng dồn | Phân rã C8/E3 không đếm trùng (§6) | **Đề xuất, chờ OD-02** |
+| `IsNegativeTotalAmount` | `TotalAmount < 0` | Cờ, chỉ là quy tắc nhận diện theo dấu | Lọc đơn giá; Operational Trip Count (OD-01) | Chốt (OD-01): dùng cho Operational Trip Count; không suy diễn dòng âm là hủy chuyến |
+| `IsInStudyPeriod` | `PickupDateTime` ∈ [2022-01-01, 2024-01-01) | Cờ | Bộ lọc mặc định của mọi báo cáo; 77.965.701 dòng | Chốt (OD-10: giữ dòng ngoài kỳ trong DDS) |
+
+> **Đã loại (OD-02):** `ExtraResidualAmount` (phần dư để tổng cấu phần bằng `TotalAmount`) từng được đề xuất ở bản trước. Nhóm chốt **không** tạo thuộc tính này; Fact lưu riêng từng cấu phần và `TotalAmount`, không ép tổng cấu phần bằng tổng nguồn.
 
 **Quy tắc tổng hợp cho chỉ số phi cộng dồn.** Fact **không** lưu tốc độ, tip ratio hay revenue/trip ở cấp dòng. Các chỉ số này luôn tính lại từ tử số và mẫu số, không cộng và không lấy trung bình của trung bình:
 
@@ -108,12 +111,7 @@ Mỗi nhận định được gắn nhãn: **[Đo]** = quan sát trực tiếp; 
 
 - [Suy luận] Với VendorID 1, 99,95% số dòng lệch được giải thích chính xác bằng phụ phí ùn tắc và/hoặc phí sân bay. Điều này **phù hợp với giả thuyết** rằng thiết bị của VendorID 1 ghi các khoản này **cả** trong `extra` **và** trong cột riêng, còn `total_amount` chỉ tính một lần. Nhóm chưa có tài liệu TLC xác nhận trực tiếp giả thuyết này.
 - [Mô hình] Total Revenue = `SUM(TotalAmount)`, đúng QĐ1 của Phúc. **Không** tính doanh thu bằng cách cộng các cấu phần.
-- [Mô hình, đề xuất OD-02] `ExtraResidualAmount` là **phần dư** được định nghĩa sao cho `Fare + ExtraResidual + MtaTax + Tip + Tolls + Improvement + Congestion + AirportFee = TotalAmount`. Phương trình này **luôn đúng do cách định nghĩa**, không phải một phát hiện. `ExtraResidualAmount` **không phải** cột nguồn, cũng không phải khoản phí do TLC định nghĩa:
-  - Với VendorID 2 nó gần bằng `extra`.
-  - Với VendorID 1 nó là `extra` trừ phần được cho là trùng.
-  - Mọi sai lệch khác của nguồn (làm tròn, lỗi thiết bị) cũng dồn vào phần dư này.
-
-  Nếu dùng cho C8/E3, báo cáo phải ghi rõ đây là "phần dư phụ phí khác".
+- [Mô hình, OD-02 đã chốt] **Không** tạo `ExtraResidualAmount`. Fact lưu độc lập 8 cấu phần (fare, extra, MTA tax, tip, tolls, improvement surcharge, congestion surcharge, airport fee) bên cạnh `TotalAmount`. Khi phân rã C8/E3, từng cấu phần được trình bày riêng; không ép tổng cấu phần bằng `TotalAmount`. Vì `extra` của VendorID 1 có thể đã gồm congestion/airport fee, so sánh cấu phần theo Vendor phải kèm ghi chú này.
 
 **(b) Khối bản ghi thiếu metadata.** [Đo] Có 2.677.659 dòng (3,43%) cùng lúc NULL ở `passenger_count`, `RatecodeID`, `store_and_fwd_flag`, `congestion_surcharge`, `airport_fee`. Tập này **trùng đúng** tập `payment_type = 0` (cả hai đếm 2.677.659 dòng) [`null_cooccurrence`]. Đặc điểm:
 - Doanh thu vẫn có giá trị hợp lý: median `total_amount` 19,66 USD với VendorID 1 và 25,29 USD với VendorID 2 [`payment0_by_vendor`].
@@ -127,7 +125,7 @@ Mỗi nhận định được gắn nhãn: **[Đo]** = quan sát trực tiếp; 
 
 | Chỉ số (Phúc) | Input trong Fact | Bộ lọc / mẫu số |
 |:---|:---|:---|
-| M1 Trip Count | `TripRecordCount` (+ `IsNegativeTotalAmount` nếu chọn Operational) | `IsInStudyPeriod`; định nghĩa chờ OD-01 |
+| M1 Trip Count | `TripRecordCount` (+ `IsNegativeTotalAmount` nếu chọn Operational) | `IsInStudyPeriod`; Record hoặc Operational, ghi rõ loại đếm (OD-01) |
 | M2 Reported Passengers | `PassengerCount` | NULL tự loại; nhóm qua `PassengerGroupKey` |
 | M3 Total Revenue | `TotalAmount` | Không cộng cấu phần |
 | M4 Fare Amount | `FareAmount` | |
@@ -139,18 +137,18 @@ Mỗi nhận định được gắn nhãn: **[Đo]** = quan sát trực tiếp; 
 | M10 Revenue/Trip | `TotalAmount`, `TripRecordCount` | Mẫu số theo OD-01 |
 | M11 Popular Route | `PickupTaxiZoneKey`, `DropoffTaxiZoneKey` | Cặp có thứ tự |
 | M12 MoM/YoY | Mọi measure cộng dồn + `PickupDateKey` | Đủ 24 tháng; 01/2022 không có MoM; năm 2022 không có YoY trong tập chọn |
-| C8/E3 cấu phần | `FareAmount`, `ExtraResidualAmount`, `MtaTaxAmount`, `TipAmount`, `TollsAmount`, `ImprovementSurchargeAmount`, `CongestionSurchargeAmount`, `AirportFeeAmount` | Chờ OD-02 |
+| C8/E3 cấu phần | `FareAmount`, `ExtraAmount`, `MtaTaxAmount`, `TipAmount`, `TollsAmount`, `ImprovementSurchargeAmount`, `CongestionSurchargeAmount`, `AirportFeeAmount` | Trình bày riêng từng cấu phần, không ép khớp `TotalAmount` (OD-02) |
 
 ## 8. Sơ đồ quan hệ
 
-![Logical star schema của FactYellowTaxiTrip](dds_logical_model.png)
+![Logical star schema của FactYellowTaxiTrip](dds_logical_model_final.png)
 
 Sơ đồ logic tích hợp vẽ theo ký hiệu crow's foot:
 - [dds_logical_model.mmd](dds_logical_model.mmd): mã nguồn Mermaid `erDiagram`, bản chuẩn để chỉnh sửa.
-- [dds_logical_model.png](dds_logical_model.png): ảnh render từ file `.mmd`.
+- [dds_logical_model_final.png](dds_logical_model_final.png): bản cuối dùng trong báo cáo (Hình 2).
 - [dds_logical_model.drawio](dds_logical_model.drawio): cùng nội dung, sinh lại từ cùng danh sách bảng.
 
-Ở phía chiều, `||` nghĩa là đúng một; ở phía Fact, `o{` nghĩa là không hoặc nhiều. Sơ đồ mức khái niệm (không có thuộc tính) nằm ở [dds_conceptual_model.png](dds_conceptual_model.png).
+Ở phía chiều, `||` nghĩa là đúng một; ở phía Fact, `o{` nghĩa là không hoặc nhiều. Sơ đồ mức khái niệm (không có thuộc tính) nằm ở [dds_conceptual_model_final.png](dds_conceptual_model_final.png) (Hình 1 của báo cáo).
 
 Tóm tắt dạng chữ:
 

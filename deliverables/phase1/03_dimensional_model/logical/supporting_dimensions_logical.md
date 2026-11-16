@@ -44,11 +44,11 @@ Phạm vi rộng hơn 2022–2023 để chứa các cuốc vắt qua ranh giới
 | `Quarter` | 2 | C8, E3 |
 | `Year` | 2023 | C1, E4 |
 | `DaysInMonth` | 30 | E2, E4: chuẩn hóa theo ngày (tháng 5 có 31 ngày, tháng 6 có 30) |
-| `IsUSFederalHoliday` | FALSE | E2: ngữ cảnh lịch. Nguồn là lịch liên bang Mỹ, **không phải** TLC; đây là thuộc tính tùy chọn, Trực có thể bỏ ở mức vật lý |
-| `HolidayName` | NULL | Như trên |
 | `IsInStudyPeriod` | TRUE | TRUE với 2022-01-01 … 2023-12-31 |
 
 **Phân cấp:** `Year → Quarter → Month → Day`. Thuộc tính song song: `DayOfWeek`, `IsWeekend`.
+
+> **Đã chốt:** không đưa ngày lễ (`IsUSFederalHoliday`, `HolidayName`) vào Phase 1 vì chưa có lịch tham chiếu được quản trị.
 
 ## 2. `DimTime` (role-playing: Pickup Time, Drop-off Time)
 
@@ -60,12 +60,10 @@ Phạm vi rộng hơn 2022–2023 để chứa các cuốc vắt qua ranh giới
 | `Hour24` | 17 | C2, C4, E5 |
 | `Minute` | 45 | |
 | `HourLabel` | 17:00–17:59 | Hiển thị |
-| `DaypartCode` / `DaypartName` | AFT / Chiều | C4, E5. **Ranh giới chờ Phúc duyệt** (OD-08) |
+| `DaypartCode` / `DaypartName` | AFT / Chiều | C4, E5. Ranh giới đã chốt (OD-08) |
 | `DaypartSortOrder` | 4 | Sắp xếp |
-| `IsPeakSurchargeWindow` | TRUE | Tùy chọn. Khung 16:00–19:59 của phụ phí giờ cao điểm theo mô tả biểu cước TLC; chỉ áp dụng ngày thường, nên phải kết hợp `DimDate.IsWeekend`. Mốc giờ cần Dũng đối chiếu tài liệu TLC trước khi dùng |
-| `IsOvernightSurchargeWindow` | FALSE | Tùy chọn. Khung 20:00–05:59 của phụ phí ban đêm; cũng cần đối chiếu như trên |
 
-**Đề xuất ranh giới Daypart (chưa chốt, OD-08).** Phúc nêu tên 5 khung nhưng chưa có mốc giờ. Bảng dưới là đề xuất của Lộc để Phúc duyệt hoặc sửa:
+**Ranh giới Daypart (đã chốt, OD-08).** Phúc nêu tên 5 khung; nhóm thông qua nguyên văn mốc giờ do Lộc đề xuất. Hai cờ khung phụ phí (`IsPeakSurchargeWindow`, `IsOvernightSurchargeWindow`) từng là thuộc tính tùy chọn đã được bỏ khỏi mô hình cuối.
 
 | Sort | Code | Tên | Khung giờ |
 |:---:|:---|:---|:---|
@@ -111,14 +109,14 @@ Phạm vi rộng hơn 2022–2023 để chứa các cuốc vắt qua ranh giới
 Tổng năm dải bằng đúng 77.966.324 dòng [`distance_bands`; dải VLONG = `10-100` + `>100`].
 
 - Dải "Rất ngắn" gồm 1.347.516 dòng có `trip_distance = 0`. Muốn tách nhóm này, lọc trực tiếp `TripDistanceMiles = 0` trên Fact.
-- Dải "Rất dài" gồm 2.833 dòng > 100 dặm (max 389.678,46). Đề xuất Phúc cân nhắc thêm dải "Bất thường (> 100 dặm)" (OD-09); chưa thay đổi thang của Phúc.
+- Dải "Rất dài" gồm 2.833 dòng > 100 dặm (max 389.678,46). **Đã chốt (OD-09):** giữ dải > 10 dặm là dải mở, không thêm dải "Bất thường"; khi phân tích độ nhạy, lọc trực tiếp `TripDistanceMiles > 100` trên Fact.
 
 ## 5. Tương quan với các chiều của Dũng
 
-| Chiều | Người dẫn dắt | Đề xuất cập nhật theo profile (chưa sửa tài liệu của Dũng; xem [quyết định](logical_model_decisions.md)) |
+| Chiều | Người dẫn dắt | Kết quả chốt (xem [quyết định](logical_model_decisions.md) §2) |
 |:---|:---|:---|
-| `DimTaxiZone` | Dũng | Giữ nguyên giá trị lookup gốc của 264/265; nhãn của `-1` phải khác 264 (OD-06) |
-| `DimVendor` | Dũng | Thêm thành viên VendorID 5, 6 với mã gốc; tên chính thức do Dũng tra (OD-04) |
-| `DimRateCode` | Dũng | Thống nhất 99 là thành viên riêng (OD-05) |
-| `DimPaymentType` | Dũng | Thêm thành viên mã 0; mã 6 không quan sát được nhưng vẫn giữ (OD-03) |
+| `DimTaxiZone` | Dũng | Giữ nguyên lookup 264/265; `-1` = "Thiếu mã vùng (Missing)" (OD-06) |
+| `DimVendor` | Dũng | VendorID 5, 6 là member riêng; VendorID 2 = "VeriFone Inc. (VeriFone / Curb / VTS)" (OD-04) |
+| `DimRateCode` | Dũng | 99 là member riêng, nhãn "Special/Flexible Rate" (OD-05) |
+| `DimPaymentType` | Dũng | Mã 0 là member chính thức; mã 6 vẫn giữ dù không quan sát được (OD-03) |
 | `DimDate`, `DimTime`, `DimPassengerGroup`, `DimDistanceBand` | Lộc | Tài liệu này |

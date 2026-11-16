@@ -1,0 +1,138 @@
+blocks:
+- all_upstream_blocks_executed: true
+  color: null
+  configuration: {}
+  downstream_blocks:
+  - filter_incremental
+  executor_config: null
+  executor_type: local_python
+  has_callback: null
+  language: python
+  name: get_extraction_window
+  retry_config: null
+  status: updated
+  timeout: null
+  type: data_loader
+  upstream_blocks: []
+  uuid: get_extraction_window
+
+- all_upstream_blocks_executed: true
+  color: null
+  configuration: {}
+  downstream_blocks:
+  - filter_incremental
+  executor_config: null
+  executor_type: local_python
+  has_callback: null
+  language: python
+  name: load_source_files
+  retry_config: null
+  status: updated
+  timeout: null
+  type: data_loader
+  upstream_blocks: []
+  uuid: load_source_files
+
+- all_upstream_blocks_executed: true
+  color: null
+  configuration: {}
+  downstream_blocks:
+  - standardize_and_validate
+  executor_config: null
+  executor_type: local_python
+  has_callback: null
+  language: python
+  name: filter_incremental
+  retry_config: null
+  status: updated
+  timeout: null
+  type: transformer
+  upstream_blocks:
+  - get_extraction_window
+  - load_source_files
+  uuid: filter_incremental
+
+- all_upstream_blocks_executed: true
+  color: null
+  configuration: {}
+  downstream_blocks:
+  - load_stage
+  executor_config: null
+  executor_type: local_python
+  has_callback: null
+  language: python
+  name: standardize_and_validate
+  retry_config: null
+  status: updated
+  timeout: null
+  type: transformer
+  upstream_blocks:
+  - filter_incremental
+  uuid: standardize_and_validate
+
+- all_upstream_blocks_executed: true
+  color: null
+  configuration: {}
+  downstream_blocks:
+  - commit_watermark
+  executor_config: null
+  executor_type: local_python
+  has_callback: null
+  language: python
+  name: load_stage
+  retry_config: null
+  status: updated
+  timeout: null
+  type: data_exporter
+  upstream_blocks:
+  - standardize_and_validate
+  uuid: load_stage
+
+- all_upstream_blocks_executed: true
+  color: null
+  configuration: {}
+  downstream_blocks: []
+  executor_config: null
+  executor_type: local_python
+  has_callback: null
+  language: python
+  name: commit_watermark
+  retry_config: null
+  status: updated
+  timeout: null
+  type: custom
+  upstream_blocks:
+  - load_stage
+  uuid: commit_watermark
+
+cache_block_output_in_memory: false
+callbacks: []
+concurrency_config: {}
+conditionals: []
+created_at: '2026-11-16 17:00:00'
+data_integration: null
+description: Incremental ingestion pipeline for NYC Yellow Taxi Parquet files with watermark management.
+executor_config: {}
+executor_count: 1
+executor_type: null
+extensions: {}
+name: yellow_taxi_ingestion
+notification_config: {}
+remote_variables_dir: null
+retry_config: {}
+run_pipeline_in_one_process: false
+settings:
+  triggers: null
+spark_config: {}
+tags:
+- yellow_taxi
+- ingestion
+- watermark
+- postgres
+type: python
+uuid: yellow_taxi_ingestion
+variables:
+  load_mode: incremental
+  batch_month: '2022-01'
+variables_dir: /home/src/mage_data/lab_project
+widgets: []

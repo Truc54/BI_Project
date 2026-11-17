@@ -1,0 +1,27 @@
+name: nyc_taxi_bi
+version: "1.0.0"
+config-version: 2
+
+profile: nyc_taxi_bi
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages", "logs"]
+
+vars:
+  # Phạm vi nghiên cứu (cờ is_in_study_period): [study_start, study_end)
+  study_start: "2022-01-01"
+  study_end: "2024-01-01"
+  # Miền của dim_date (Dũng). Ngày ngoài miền -> date_key = -1 để không mồ côi khóa ngoại.
+  date_dim_start: "2022-01-01"
+  date_dim_end: "2024-12-31"
+  # Ngưỡng vận tốc tối đa hợp lý; vượt ngưỡng -> speed_mph = NULL
+  max_speed_mph: 120
+
+models:
+  nyc_taxi_bi:
+    staging:
+      +materialized: view
+      +schema: clean_view

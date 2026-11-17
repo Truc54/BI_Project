@@ -18,3 +18,10 @@ mage_data/
 /taxi_zones.zip
 /taxi_zones/
 /taxi+_zone_lookup.csv
+
+# dbt build artifacts
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+dbt/.user.yml
+logs/

@@ -25,3 +25,6 @@ models:
     staging:
       +materialized: view
       +schema: clean_view
+    marts:
+      +materialized: table
+      +schema: dds

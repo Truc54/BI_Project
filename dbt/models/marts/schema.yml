@@ -31,6 +31,8 @@ models:
         description: "Phân nhóm Daypart: NIGHT, MORN, MID, AFT, EVE theo OD-08."
         tests:
           - not_null
+          - accepted_values:
+              values: ['NIGHT', 'MORN', 'MID', 'AFT', 'EVE']
 
   - name: dim_taxi_zone
     description: "Bảng chiều danh mục 265 vùng Taxi NYC TLC và vùng mặc định -1."
@@ -82,6 +84,8 @@ models:
       - name: allows_electronic_tip
         tests:
           - not_null
+          - accepted_values:
+              values: [true, false]
 
   - name: dim_passenger_group
     description: "Bảng chiều phân nhóm hành khách (1 người, 2-4 người, 5+ người, Unknown/Zero)."
@@ -93,6 +97,8 @@ models:
       - name: passenger_group_name
         tests:
           - not_null
+          - accepted_values:
+              values: ['1 passenger', '2-4 passengers', '5+ passengers', 'Unknown/Zero']
 
   - name: dim_distance_range
     description: "Bảng chiều phân dải cự ly di chuyển (0-1 dặm, 1-3 dặm, 3-5 dặm, 5-10 dặm, >10 dặm, Invalid/Unknown)."
@@ -104,6 +110,8 @@ models:
       - name: distance_range_name
         tests:
           - not_null
+          - accepted_values:
+              values: ['0-1 mile', '1-3 miles', '3-5 miles', '5-10 miles', '>10 miles', 'Invalid/Unknown']
 
   - name: fact_yellow_taxi_trip
     description: "Bảng Fact trung tâm lưu trữ toàn bộ các cuốc xe Yellow Taxi (mức hạt 1 dòng = 1 bản ghi nguồn)."
@@ -188,6 +196,30 @@ models:
       - name: trip_record_count
         tests:
           - not_null
+          - accepted_values:
+              values: [1]
       - name: is_in_study_period
         tests:
           - not_null
+          - accepted_values:
+              values: [true, false]
+      - name: is_negative_charge
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+      - name: is_valid_duration
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+      - name: is_valid_for_tip_ratio
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+      - name: is_valid_for_speed
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]

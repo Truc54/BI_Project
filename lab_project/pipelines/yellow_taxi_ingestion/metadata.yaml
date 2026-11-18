@@ -91,7 +91,8 @@ blocks:
 - all_upstream_blocks_executed: true
   color: null
   configuration: {}
-  downstream_blocks: []
+  downstream_blocks:
+  - run_dbt_transforms
   executor_config: null
   executor_type: local_python
   has_callback: null
@@ -104,6 +105,23 @@ blocks:
   upstream_blocks:
   - load_stage
   uuid: commit_watermark
+
+- all_upstream_blocks_executed: true
+  color: null
+  configuration: {}
+  downstream_blocks: []
+  executor_config: null
+  executor_type: local_python
+  has_callback: null
+  language: python
+  name: run_dbt_transforms
+  retry_config: null
+  status: updated
+  timeout: null
+  type: custom
+  upstream_blocks:
+  - commit_watermark
+  uuid: run_dbt_transforms
 
 cache_block_output_in_memory: false
 callbacks: []

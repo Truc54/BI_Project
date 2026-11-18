@@ -138,7 +138,7 @@ name: yellow_taxi_ingestion
 notification_config: {}
 remote_variables_dir: null
 retry_config: {}
-run_pipeline_in_one_process: false
+run_pipeline_in_one_process: true
 settings:
   triggers: null
 spark_config: {}

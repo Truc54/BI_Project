@@ -32,7 +32,7 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['NIGHT', 'MORN', 'MID', 'AFT', 'EVE']
+              values: ['NIGHT', 'MORN', 'MID', 'AFT', 'EVE', 'UNKNOWN']
 
   - name: dim_taxi_zone
     description: "Bảng chiều danh mục 265 vùng Taxi NYC TLC và vùng mặc định -1."

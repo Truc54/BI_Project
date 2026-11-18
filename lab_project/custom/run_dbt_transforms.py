@@ -88,12 +88,13 @@ def execute_dbt_command(command: list[str], cwd: Path) -> None:
 
 
 @custom
-def run_dbt_transforms(payload, *args, **kwargs):
+def run_dbt_transforms(*args, **kwargs):
     """
     Kích hoạt dbt biến đổi dữ liệu sau khi commit watermark thành công:
     1. Chạy dbt run: biên dịch và thực thi Staging (clean_view) và Marts (dds).
     2. Chạy dbt test: kiểm thử toàn bộ ràng buộc schema và business logic.
     """
+    payload = args[0] if len(args) > 0 else kwargs.get('payload', {})
     print(f"[✓] Nhận tín hiệu từ commit_watermark: {payload}")
 
     dbt_dir = find_dbt_project_dir()

@@ -2,9 +2,10 @@
 -- 01_init.sql: Khởi tạo Schemas và Bảng cho NYC Yellow Taxi BI Project
 -- =============================================================================
 
--- 1. Tạo 3 schemas chuẩn theo hướng dẫn môn học
+-- 1. Tạo các schemas chuẩn theo kiến trúc dữ liệu của dự án
 CREATE SCHEMA IF NOT EXISTS control;
 CREATE SCHEMA IF NOT EXISTS stage;
+CREATE SCHEMA IF NOT EXISTS clean_view;
 CREATE SCHEMA IF NOT EXISTS dds;
 
 -- =============================================================================

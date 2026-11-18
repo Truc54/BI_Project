@@ -43,20 +43,29 @@ def load_stage(payload, *args, **kwargs):
             cursor.execute("DELETE FROM stage.raw_yellow_tripdata WHERE source_file_month = ANY(%s);", (months_to_clear,))
             print(f"[*] [INCREMENTAL LOAD] Đã dọn dẹp các tháng cũ (nếu có): {months_to_clear}")
 
-        # Streaming copy tốc độ cao
-        buffer = StringIO()
-        df.to_csv(buffer, index=False, header=False, sep='\t', na_rep='\\N')
-        buffer.seek(0)
-
+        # Streaming copy theo từng batch 250,000 dòng để tối ưu bộ nhớ RAM
         cols = list(df.columns)
         copy_sql = f"""
             COPY stage.raw_yellow_tripdata ({', '.join(cols)})
             FROM STDIN WITH (FORMAT text, NULL '\\N');
         """
-        cursor.copy_expert(copy_sql, buffer)
+        chunk_size = 250_000
+        for i in range(0, len(df), chunk_size):
+            chunk = df.iloc[i:i + chunk_size]
+            buffer = StringIO()
+            chunk.to_csv(buffer, index=False, header=False, sep='\t', na_rep='\\N')
+            buffer.seek(0)
+            cursor.copy_expert(copy_sql, buffer)
+            buffer.close()
+
         conn.commit()
 
         print(f"[✓] Đã nạp thành công {len(df):,} dòng vào stage.raw_yellow_tripdata (Chế độ: {load_mode.upper()}).")
+
+        # Giải phóng DataFrame khỏi payload để tránh đầy RAM cho các block downstream
+        del payload['df']
+        import gc
+        gc.collect()
     except Exception as e:
         conn.rollback()
         raise e

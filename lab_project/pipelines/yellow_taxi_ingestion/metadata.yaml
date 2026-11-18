@@ -151,6 +151,6 @@ type: python
 uuid: yellow_taxi_ingestion
 variables:
   load_mode: incremental
-  batch_month: '2022-01'
+  batch_month: null
 variables_dir: /home/src/mage_data/lab_project
 widgets: []

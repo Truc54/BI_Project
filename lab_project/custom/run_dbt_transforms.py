@@ -32,10 +32,13 @@ def find_dbt_project_dir() -> Path:
     """
     candidates = [
         Path('/home/src/dbt'),
-        Path(__file__).resolve().parent.parent.parent / 'dbt',
-        Path(get_repo_path()).parent / 'dbt',
         Path('dbt'),
+        Path(get_repo_path()).parent / 'dbt',
+        Path(get_repo_path()) / 'dbt',
     ]
+    if '__file__' in globals():
+        candidates.append(Path(__file__).resolve().parent.parent.parent / 'dbt')
+
     for p in candidates:
         if p.exists() and (p / 'dbt_project.yml').exists():
             return p.resolve()

@@ -1,0 +1,26 @@
+version: 2
+
+sources:
+  - name: stage
+    description: "Dữ liệu thô do pipeline Mage (Trực) nạp từ 24 tệp Parquet và taxi+_zone_lookup.csv."
+    schema: stage
+    tables:
+      - name: raw_yellow_tripdata
+        description: "Một dòng cho mỗi dòng của tệp Parquet tháng; giữ nguyên 19 trường nguồn + 2 trường lineage."
+        columns:
+          - name: source_file_month
+            description: "Tháng của tệp nguồn, dạng YYYY-MM."
+            data_tests:
+              - not_null
+          - name: source_row_number
+            description: "Số thứ tự dòng trong tệp tháng."
+            data_tests:
+              - not_null
+
+      - name: raw_taxi_zones
+        description: "Danh mục 265 Taxi Zone của TLC."
+        columns:
+          - name: location_id
+            data_tests:
+              - not_null
+              - unique

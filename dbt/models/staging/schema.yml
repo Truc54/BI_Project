@@ -1,0 +1,137 @@
+version: 2
+
+models:
+  - name: stg_taxi_zones_cleaned
+    description: >
+      Danh mục Taxi Zone đã chuẩn hóa: 265 mã TLC + thành viên mặc định -1 (Unknown Zone).
+      264 (Unknown) và 265 (Outside of NYC) được giữ là mã hợp lệ, không có hình học.
+    columns:
+      - name: location_id
+        description: "Mã TLC 1..265; -1 = thiếu/không hợp lệ."
+        data_tests:
+          - not_null
+          - unique
+      - name: borough
+        description: "Tên quận chuẩn hóa; 264 = Unknown, 265 = N/A theo nhãn nguồn."
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['Manhattan', 'Queens', 'Brooklyn', 'Bronx', 'Staten Island', 'EWR', 'Unknown', 'N/A']
+      - name: zone_name
+        data_tests:
+          - not_null
+      - name: service_zone
+        data_tests:
+          - not_null
+      - name: has_geometry
+        description: "TRUE cho ID 1..263 (có polygon trong shapefile)."
+        data_tests:
+          - not_null
+      - name: is_unknown_member
+        description: "TRUE chỉ ở dòng -1."
+        data_tests:
+          - not_null
+
+  - name: stg_yellow_trips_cleaned
+    description: >
+      Cuốc xe Yellow Taxi đã làm sạch. Mức hạt: 1 dòng của stage.raw_yellow_tripdata
+      (không loại dòng nào; dị thường được gắn cờ thay vì xóa). Khóa nguồn: (source_file_month, source_row_number).
+    columns:
+      - name: source_file_month
+        data_tests: [not_null]
+      - name: source_row_number
+        data_tests: [not_null]
+      - name: pickup_datetime
+        description: "tpep_pickup_datetime, giờ địa phương NYC."
+      - name: dropoff_datetime
+        description: "tpep_dropoff_datetime, giờ địa phương NYC."
+      - name: pickup_date_key
+        description: "YYYYMMDD; -1 nếu ngày nằm ngoài miền dim_date (var date_dim_start..date_dim_end)."
+        data_tests: [not_null]
+      - name: dropoff_date_key
+        description: "YYYYMMDD; -1 nếu ngày nằm ngoài miền dim_date."
+        data_tests: [not_null]
+      - name: pickup_time_key
+        description: "Phút trong ngày 0..1439 (giờ*60 + phút)."
+        data_tests: [not_null]
+      - name: dropoff_time_key
+        description: "Phút trong ngày 0..1439."
+        data_tests: [not_null]
+      - name: is_in_study_period
+        description: "TRUE nếu pickup trong [2022-01-01, 2024-01-01)."
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: duration_minutes
+        description: "(dropoff - pickup) tính bằng phút, có dấu (giữ giá trị âm/0)."
+      - name: speed_mph
+        description: "trip_distance / giờ; NULL nếu duration <= 0, distance âm/NULL hoặc > max_speed_mph (120)."
+      - name: is_valid_duration
+        description: "0 < duration <= 24 giờ (M7)."
+        data_tests: [not_null]
+      - name: is_valid_for_speed
+        description: "Bộ lọc M9: duration >= 60 giây, distance > 0.1 dặm, tốc độ 1..80 mph."
+        data_tests: [not_null]
+      - name: passenger_count
+        description: "Số khách nguồn (giữ NULL, giữ 0)."
+      - name: passenger_group_name
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['1 passenger', '2-4 passengers', '5+ passengers', 'Unknown/Zero']
+      - name: trip_distance
+        description: "Dặm, giữ nguyên giá trị gốc."
+      - name: distance_range_name
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['0-1 mile', '1-3 miles', '3-5 miles', '5-10 miles', '>10 miles', 'Invalid/Unknown']
+      - name: vendor_id
+        description: "1 = CMT, 2 = VeriFone; NULL hoặc mã khác (vd. 5, 6) -> -1. Mã gốc ở vendor_id_source."
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, -1]
+              quote: false
+      - name: rate_code_id
+        description: "1..6, 99; NULL hoặc mã khác -> -1. Mã gốc ở rate_code_id_source."
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6, 99, -1]
+              quote: false
+      - name: payment_type
+        description: "1..6; NULL hoặc mã khác (vd. 0) -> -1. Mã gốc ở payment_type_source."
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6, -1]
+              quote: false
+      - name: pu_location_id
+        description: "Mã vùng đón; không có trong danh mục hoặc NULL -> -1."
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_taxi_zones_cleaned')
+              field: location_id
+      - name: do_location_id
+        description: "Mã vùng trả; không có trong danh mục hoặc NULL -> -1."
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_taxi_zones_cleaned')
+              field: location_id
+      - name: store_and_fwd_flag
+        description: "Y/N; NULL = không ghi nhận."
+      - name: fare_amount
+        description: "Giữ nguyên, kể cả âm."
+      - name: total_amount
+        description: "Giữ nguyên, kể cả âm. Chỉ số chuẩn cho Total Revenue."
+      - name: is_negative_charge
+        description: "TRUE nếu total_amount < 0 hoặc fare_amount < 0 (ứng viên hoàn tiền/tranh chấp/đảo bút toán)."
+        data_tests: [not_null]
+      - name: is_valid_for_tip_ratio
+        description: "payment_type_source = 1 và fare_amount > 0 (Quyết định 2)."
+        data_tests: [not_null]
